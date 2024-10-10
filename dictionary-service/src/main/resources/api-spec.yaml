@@ -1,0 +1,119 @@
+openapi: 3.0.0
+info:
+  title: API Spec for TKD
+  description: API Endpoint descriptions for TKD
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8081
+    description: Local development server
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - IamV1
+      operationId: registerUser
+      summary: Register user into database and return token
+      requestBody:
+        description: The user information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationRequest"
+      responses:
+        "200":
+          description: The token response and messages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        "409":
+          description: Similar credentials already registered
+  /auth/login:
+    post:
+      tags:
+        - IamV1
+      operationId: loginUser
+      summary: Authenticate and authorize user. Return tokens.
+      requestBody:
+        description: Login information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: The token and response messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+  /auth/check-username:
+    get:
+      tags:
+        - IamV1
+      operationId: checkUsernameAvailable
+      summary: Check whether username is already in use.
+      parameters:
+        - in: query
+          name: username
+          schema:
+            type: string
+          required: true
+          description: The username to be checked
+      responses:
+        "200":
+          description: Just return a boolean whether it's already in use or not
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /auth/check-email:
+    get:
+      tags:
+        - IamV1
+      operationId: checkEmailAvailable
+      summary: Check whether email is already registered.
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+          required: true
+          description: The email to be checked
+      responses:
+        "200":
+          description: Just return a boolean whether it's already registered or not
+          content:
+            application/json:
+              schema:
+                type: boolean
+
+components:
+  schemas:
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        message:
+          type: string
+    RegistrationRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    LoginRequest:
+      type: object
+      properties:
+        login:
+          type: string
+        password:
+          type: string

@@ -1,0 +1,11 @@
+{
+  "library": "spring-mvc",
+  "modelPackage": "com.tkd.models",
+  "apiPackage": "com.tkd.apis",
+  "invokerPackage": "com.tkd",
+  "dateLibrary": "java8",
+  "interfaceOnly": "true",
+  "serializableModel": "true",
+  "useTags": "true",
+  "jakarta": "true"
+}

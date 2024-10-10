@@ -1,0 +1,33 @@
+# Gradle files
+.gradle/
+build/
+out/
+**/build/
+**/out/
+
+# IntelliJ IDEA files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Log files
+*.log
+logs/
+
+# Application properties
+application*.yml
+application*.yaml
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Other files
+*.class
+*.jar
+*.war
+*.ear
+*.tmp
+*.swp
+*.swo
