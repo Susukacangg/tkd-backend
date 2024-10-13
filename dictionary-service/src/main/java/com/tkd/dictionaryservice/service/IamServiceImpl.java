@@ -1,11 +1,12 @@
 package com.tkd.dictionaryservice.service;
 
+import com.tkd.dictionaryservice.dto.LogoutResponse;
 import com.tkd.dictionaryservice.dto.UserSession;
 import com.tkd.dictionaryservice.entity.UserEntity;
 import com.tkd.dictionaryservice.entity.UserRole;
 import com.tkd.dictionaryservice.repository.IamDao;
-import com.tkd.models.AuthResponse;
 import com.tkd.models.LoginRequest;
+import com.tkd.models.LoginResponse;
 import com.tkd.models.RegistrationRequest;
 
 import lombok.RequiredArgsConstructor;
@@ -28,8 +29,10 @@ public class IamServiceImpl implements IamService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
+    private final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
+
     @Override
-    public AuthResponse registerUser(RegistrationRequest regisReq) throws Exception {
+    public String registerUser(RegistrationRequest regisReq) throws Exception {
         // build new user
         UserEntity newUser = UserEntity
                 .builder()
@@ -40,11 +43,10 @@ public class IamServiceImpl implements IamService {
                 .build();
 
         UserEntity savedUser = iamDao.save(newUser); // throws exception if got duplicates
-        AuthResponse response = new AuthResponse();
         if(savedUser.getId() > 0)
-            response.setMessage("Successfully registered!"); // set response info message
+            return "Successfully registered!"; // set message
 
-        return response;
+        return null;
     }
 
     @Override
@@ -62,19 +64,34 @@ public class IamServiceImpl implements IamService {
         String refreshToken = jwtService.generateRefreshToken(retrievedUser.get());
 
         // set cookies
-        ResponseCookie responseCookie = ResponseCookie.from("refresh_token", refreshToken)
+        ResponseCookie responseCookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
                 .httpOnly(true)
                 .path("/")
                 .maxAge(60 * 60 * 24 * 7)
                 .build();
 
         // set response body and return response
-        AuthResponse authResponse = new AuthResponse();
-        authResponse.setToken(jwtToken);
-        authResponse.setMessage("Successfully logged in!");
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setUsername(retrievedUser.get().getUsername());
+        loginResponse.setToken(jwtToken);
+        loginResponse.setMessage("Successfully logged in!");
 
         return UserSession.builder()
-                .authResponse(authResponse)
+                .loginResponse(loginResponse)
+                .responseCookie(responseCookie)
+                .build();
+    }
+
+    @Override
+    public LogoutResponse logoutUser() {
+        ResponseCookie responseCookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        return LogoutResponse.builder()
+                .message("Successfully logged out!")
                 .responseCookie(responseCookie)
                 .build();
     }

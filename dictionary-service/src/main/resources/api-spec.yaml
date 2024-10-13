@@ -24,11 +24,11 @@ paths:
               $ref: "#/components/schemas/RegistrationRequest"
       responses:
         "200":
-          description: The token response and messages
+          description: Registration feedback message
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
+                type: string
         "409":
           description: Similar credentials already registered
   /auth/login:
@@ -50,7 +50,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthResponse"
+                $ref: "#/components/schemas/LoginResponse"
+  /auth/logout:
+    post:
+      tags:
+        - IamV1
+      operationId: logoutUser
+      summary: Logout user.
+      responses:
+        "200":
+          description: Response message after logout
+          content:
+            application/json:
+              schema:
+                type: string
   /auth/check-username:
     get:
       tags:
@@ -94,13 +107,6 @@ paths:
 
 components:
   schemas:
-    AuthResponse:
-      type: object
-      properties:
-        token:
-          type: string
-        message:
-          type: string
     RegistrationRequest:
       type: object
       properties:
@@ -116,4 +122,13 @@ components:
         login:
           type: string
         password:
+          type: string
+    LoginResponse:
+      type: object
+      properties:
+        username:
+          type: string
+        token:
+          type: string
+        message:
           type: string
