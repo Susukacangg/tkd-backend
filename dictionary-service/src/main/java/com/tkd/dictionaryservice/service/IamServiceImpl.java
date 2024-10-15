@@ -68,6 +68,8 @@ public class IamServiceImpl implements IamService {
         // set cookies
         ResponseCookie responseCookie = ResponseCookie.from(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY, refreshToken)
                 .httpOnly(true)
+                .sameSite("None")
+                .secure(true)
                 .path("/")
                 .maxAge(60 * 60 * 24 * 7)
                 .build();
@@ -112,12 +114,10 @@ public class IamServiceImpl implements IamService {
         UserEntity userDetails = iamDao.findByUsername(currUsername)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("Refresh token: username %s not found!", currUsername)));
 
-        if (jwtService.isTokenValid(currRefreshToken, userDetails)) {
+        if (jwtService.isTokenValid(currRefreshToken, userDetails))
             loginResponse.setToken(jwtService.generateToken(userDetails));
-            loginResponse.setMessage("Login refreshed");
-        } else {
+        else
             loginResponse.setMessage("Invalid refresh token");
-        }
 
         return loginResponse;
     }
