@@ -39,14 +39,11 @@ public class JwtService {
         return buildToken(new HashMap<>(), userDetails, REFRESH_TOKEN_EXPIRATION_PERIOD);
     }
 
+    // parseSignedClaims in extract username already checks if token is expired
     public boolean isTokenValid(String jwtToken, UserDetails userDetails) {
         final String currUsername = extractUsername(jwtToken);
         // compares the username in the JWT to the passed in username
-        return (currUsername.equals(userDetails.getUsername()) && !isTokenExpired(jwtToken));
-    }
-
-    public boolean isTokenExpired(String jwtToken) {
-        return extractExpirationDate(jwtToken).before(new Date());
+        return (currUsername.equals(userDetails.getUsername()));
     }
 
     public String extractUsername(String jwtToken) {
@@ -68,10 +65,6 @@ public class JwtService {
                 .expiration(new Date(System.currentTimeMillis() + expirationPeriod))
                 .signWith(getSigningKey(), Jwts.SIG.HS256)
                 .compact();
-    }
-
-    private Date extractExpirationDate(String jwtToken) {
-        return extractClaim(jwtToken, Claims::getExpiration);
     }
 
     private Claims extractAllClaims(String jwtToken) {
