@@ -6,6 +6,7 @@ import com.tkd.models.LoginRequest;
 import com.tkd.models.LoginResponse;
 import com.tkd.models.RegistrationRequest;
 import com.tkd.models.UserAccount;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 
 public interface IamService {
@@ -15,7 +16,7 @@ public interface IamService {
 
     LogoutResponse logoutUser();
 
-    LoginResponse refreshToken(Cookie cookie);
+    LoginResponse refreshToken(Cookie cookie) throws ExpiredJwtException;
 
     UserAccount getUserAccount(String token);
 

@@ -11,6 +11,7 @@ import com.tkd.models.LoginResponse;
 import com.tkd.models.RegistrationRequest;
 
 import com.tkd.models.UserAccount;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -97,19 +98,19 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public LoginResponse refreshToken(Cookie cookie) {
+    public LoginResponse refreshToken(Cookie cookie) throws ExpiredJwtException {
         // validate the refresh token
         // generate a new jwt token
         // return the jwt token, username, and message
         String currRefreshToken, currUsername;
+        LoginResponse loginResponse = new LoginResponse();
 
+        // have to catch error because the passed token may be expired
+        // and endpoint doesn't need authentication to use
         currRefreshToken = cookie.getValue();
         currUsername = jwtService.extractUsername(currRefreshToken);
-
         UserEntity userDetails = iamDao.findByUsername(currUsername)
-                .orElseThrow(() -> new UsernameNotFoundException(String.format("Refresh token: %s not found!", currUsername)));
-
-        LoginResponse loginResponse = new LoginResponse();
+                .orElseThrow(() -> new UsernameNotFoundException(String.format("Refresh token: username %s not found!", currUsername)));
 
         if (jwtService.isTokenValid(currRefreshToken, userDetails)) {
             loginResponse.setToken(jwtService.generateToken(userDetails));
@@ -126,7 +127,7 @@ public class IamServiceImpl implements IamService {
         String username = jwtService.extractUsername(token);
 
         UserEntity userDetails = iamDao.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(String.format("Get user details: %s not found!", username)));
+                .orElseThrow(() -> new UsernameNotFoundException(String.format("Get user details: username %s not found!", username)));
 
         UserAccount userAccount = new UserAccount();
         userAccount.setUsername(userDetails.getUsername());

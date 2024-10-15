@@ -9,6 +9,7 @@ import com.tkd.models.LoginRequest;
 import com.tkd.models.LoginResponse;
 import com.tkd.models.RegistrationRequest;
 import com.tkd.models.UserAccount;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,7 @@ public class IamController implements IamV1Api {
     @Override
     public ResponseEntity<LoginResponse> refreshToken() {
         Optional<HttpServletRequest> requestOptional = getRequest();
+        LoginResponse loginResponse = new LoginResponse();
 
         if(requestOptional.isPresent()) {
             HttpServletRequest request = requestOptional.get();
@@ -70,20 +72,25 @@ public class IamController implements IamV1Api {
             if(cookies != null) {
                 Cookie refreshTokenCookie = null;
 
+                // find for the refresh token cookie
                 for (Cookie cookie : cookies)
-                    if(cookie.getName().equals(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY)) refreshTokenCookie = cookie;
+                    if(cookie.getName().equals(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY))
+                        refreshTokenCookie = cookie;
 
-                return ResponseEntity.ok(iamService.refreshToken(refreshTokenCookie));
-            } else {
-                // means no cookies, should not be calling in the first place
-                // return response error
+                try {
+                    return ResponseEntity.ok(iamService.refreshToken(refreshTokenCookie));
+                } catch (ExpiredJwtException e) {
+                    loginResponse.setMessage("Refresh token expired");
+                    return ResponseEntity.internalServerError().body(loginResponse);
+                }
+            } else { // means no cookies, should not be calling in the first place
                 log.error("No cookie present");
-                LoginResponse loginResponse = new LoginResponse();
                 loginResponse.setMessage("No refresh token found");
                 return ResponseEntity.internalServerError().body(loginResponse);
             }
         }
 
+        // don't have http request
         return ResponseEntity.internalServerError().body(null);
     }
 
