@@ -16,10 +16,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private static final String[] URL_WHITELIST = {
-            "/**",
-            "/login",
-            "/register",
+    /*private static final String[] URL_WHITELIST = {
+            "/auth/**",
             "/v3/api-docs",
             "/v3/api-docs/**",
             "/swagger-resources",
@@ -29,6 +27,10 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/webjars/**",
             "/swagger-ui.html",
+    };*/
+
+    private static final String[] URL_BLACKLIST = {
+            "/auth/get-user-details"
     };
 
     private final JwtAuthFilter jwtAuthFilter;
@@ -40,8 +42,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(matcherRegistry -> matcherRegistry
-                        .requestMatchers(URL_WHITELIST).permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers(URL_BLACKLIST).authenticated()
+                        .anyRequest().permitAll())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authProvider)

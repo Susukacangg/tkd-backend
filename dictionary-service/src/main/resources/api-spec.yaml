@@ -64,6 +64,32 @@ paths:
             application/json:
               schema:
                 type: string
+  /auth/refresh:
+    post:
+      tags:
+        - IamV1
+      operationId: refreshToken
+      summary: Refresh JWT token based on refresh token
+      responses:
+        "200":
+          description: The new JWT token and username of the current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+  /auth/get-user-details:
+    get:
+      tags:
+        - IamV1
+      operationId: getUserDetails
+      summary: Get the details of the logged in user
+      responses:
+        "200":
+          description: Object holding details of the user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserAccount"
   /auth/check-username:
     get:
       tags:
@@ -126,9 +152,12 @@ components:
     LoginResponse:
       type: object
       properties:
-        username:
-          type: string
         token:
           type: string
         message:
+          type: string
+    UserAccount:
+      type: object
+      properties:
+        username:
           type: string

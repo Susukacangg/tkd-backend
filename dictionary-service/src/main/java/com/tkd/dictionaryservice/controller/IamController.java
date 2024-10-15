@@ -4,14 +4,23 @@ import com.tkd.apis.IamV1Api;
 import com.tkd.dictionaryservice.dto.LogoutResponse;
 import com.tkd.dictionaryservice.dto.UserSession;
 import com.tkd.dictionaryservice.service.IamService;
+import com.tkd.dictionaryservice.utility.IamServiceUtility;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.LoginResponse;
 import com.tkd.models.RegistrationRequest;
+import com.tkd.models.UserAccount;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,7 +45,7 @@ public class IamController implements IamV1Api {
                     .header(HttpHeaders.SET_COOKIE, userSession.getResponseCookie().toString())
                     .body(userSession.getLoginResponse());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }
 
@@ -50,6 +59,49 @@ public class IamController implements IamV1Api {
     }
 
     @Override
+    public ResponseEntity<LoginResponse> refreshToken() {
+        Optional<HttpServletRequest> requestOptional = getRequest();
+
+        if(requestOptional.isPresent()) {
+            HttpServletRequest request = requestOptional.get();
+            Cookie[] cookies = request.getCookies();
+
+            // if got cookie, means got refresh token
+            if(cookies != null) {
+                Cookie refreshTokenCookie = null;
+
+                for (Cookie cookie : cookies)
+                    if(cookie.getName().equals(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY)) refreshTokenCookie = cookie;
+
+                return ResponseEntity.ok(iamService.refreshToken(refreshTokenCookie));
+            } else {
+                // means no cookies, should not be calling in the first place
+                // return response error
+                log.error("No cookie present");
+                LoginResponse loginResponse = new LoginResponse();
+                loginResponse.setMessage("No refresh token found");
+                return ResponseEntity.internalServerError().body(loginResponse);
+            }
+        }
+
+        return ResponseEntity.internalServerError().body(null);
+    }
+
+    @Override
+    public ResponseEntity<UserAccount> getUserDetails() {
+        Optional<HttpServletRequest> requestOptional = getRequest();
+        if(requestOptional.isPresent()) {
+            HttpServletRequest request = requestOptional.get();
+            // "Bearer " <- has seven characters
+            String token = request.getHeader("Authorization").substring(7);
+
+            return ResponseEntity.ok(iamService.getUserAccount(token));
+        }
+
+        return ResponseEntity.internalServerError().body(null);
+    }
+
+    @Override
     public ResponseEntity<Boolean> checkUsernameAvailable(String username) {
         return ResponseEntity.ok(iamService.checkUsernameAvailable(username));
     }
@@ -57,5 +109,14 @@ public class IamController implements IamV1Api {
     @Override
     public ResponseEntity<Boolean> checkEmailAvailable(String email) {
         return ResponseEntity.ok(iamService.checkEmailAvailable(email));
+    }
+
+    @Override
+    public Optional<HttpServletRequest> getRequest() {
+        return Optional.of(
+                ((ServletRequestAttributes)
+                        Objects.requireNonNull(RequestContextHolder.getRequestAttributes()))
+                        .getRequest()
+        );
     }
 }
