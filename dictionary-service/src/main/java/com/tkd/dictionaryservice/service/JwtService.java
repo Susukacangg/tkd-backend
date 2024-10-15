@@ -2,7 +2,9 @@ package com.tkd.dictionaryservice.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import java.util.function.Function;
 
 
 @Service
+@Slf4j
 public class JwtService {
 
     @Value("${project.security.jwt.secret-key}")
@@ -47,7 +50,12 @@ public class JwtService {
     }
 
     public String extractUsername(String jwtToken) {
-        return extractClaim(jwtToken, Claims::getSubject);
+        try {
+            return extractClaim(jwtToken, Claims::getSubject);
+        } catch (MalformedJwtException e) {
+            log.error(e.getMessage());
+            return null;
+        }
     }
 
     public <T> T extractClaim(String jwtToken, Function<Claims, T> claimsResolver) {
