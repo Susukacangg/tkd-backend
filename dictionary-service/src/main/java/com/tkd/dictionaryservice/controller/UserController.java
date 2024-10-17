@@ -1,7 +1,6 @@
 package com.tkd.dictionaryservice.controller;
 
 import com.tkd.apis.UserV1Api;
-import com.tkd.dictionaryservice.service.IamService;
 import com.tkd.dictionaryservice.service.UserService;
 import com.tkd.dictionaryservice.utility.IamServiceUtility;
 import com.tkd.models.UserAccount;
