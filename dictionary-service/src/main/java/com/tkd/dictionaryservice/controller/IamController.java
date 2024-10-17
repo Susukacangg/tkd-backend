@@ -6,7 +6,6 @@ import com.tkd.dictionaryservice.service.IamService;
 import com.tkd.dictionaryservice.utility.IamServiceUtility;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
-import com.tkd.models.UserAccount;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -109,25 +108,6 @@ public class IamController implements IamV1Api {
         }
 
         // don't have http request
-        return ResponseEntity.internalServerError().body(null);
-    }
-
-    @Override
-    public ResponseEntity<UserAccount> getUserDetails() {
-        Optional<HttpServletRequest> requestOptional = getRequest();
-        if(requestOptional.isPresent()) {
-            HttpServletRequest request = requestOptional.get();
-
-            Cookie[] cookies = request.getCookies();
-            String token = null;
-            if(cookies != null) {
-                for(Cookie cookie : cookies)
-                    if(cookie.getName().equals(IamServiceUtility.TOKEN_COOKIE_KEY))
-                        token = cookie.getValue();
-                return ResponseEntity.ok(iamService.getUserAccount(token));
-            }
-        }
-
         return ResponseEntity.internalServerError().body(null);
     }
 

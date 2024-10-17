@@ -75,19 +75,6 @@ paths:
             application/json:
               schema:
                 type: string
-  /auth/get-user-details:
-    get:
-      tags:
-        - IamV1
-      operationId: getUserDetails
-      summary: Get the details of the logged in user
-      responses:
-        "200":
-          description: Object holding details of the user
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserAccount"
   /auth/check-username:
     get:
       tags:
@@ -128,6 +115,19 @@ paths:
             application/json:
               schema:
                 type: boolean
+  /user/details:
+    get:
+      tags:
+        - UserV1
+      operationId: getUserDetails
+      summary: Get the details of the logged in user
+      responses:
+        "200":
+          description: Object holding details of the user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserAccount"
 
 components:
   schemas:
