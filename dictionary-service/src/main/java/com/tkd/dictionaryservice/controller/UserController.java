@@ -2,6 +2,7 @@ package com.tkd.dictionaryservice.controller;
 
 import com.tkd.apis.UserV1Api;
 import com.tkd.dictionaryservice.service.IamService;
+import com.tkd.dictionaryservice.service.UserService;
 import com.tkd.dictionaryservice.utility.IamServiceUtility;
 import com.tkd.models.UserAccount;
 import jakarta.servlet.http.Cookie;
@@ -18,7 +19,7 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 public class UserController implements UserV1Api {
-    private final IamService iamService;
+    private final UserService userService;
 
     @Override
     public ResponseEntity<UserAccount> getUserDetails() {
@@ -32,7 +33,7 @@ public class UserController implements UserV1Api {
                 for(Cookie cookie : cookies)
                     if(cookie.getName().equals(IamServiceUtility.TOKEN_COOKIE_KEY))
                         token = cookie.getValue();
-                return ResponseEntity.ok(iamService.getUserAccount(token));
+                return ResponseEntity.ok(userService.getUserDetails(token));
             }
         }
 

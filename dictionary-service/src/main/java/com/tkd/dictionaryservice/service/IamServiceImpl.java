@@ -3,12 +3,11 @@ package com.tkd.dictionaryservice.service;
 import com.tkd.dictionaryservice.dto.AuthResponse;
 import com.tkd.dictionaryservice.entity.UserEntity;
 import com.tkd.dictionaryservice.entity.UserRole;
-import com.tkd.dictionaryservice.repository.IamDao;
+import com.tkd.dictionaryservice.repository.UserDao;
 import com.tkd.dictionaryservice.utility.IamServiceUtility;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
 
-import com.tkd.models.UserAccount;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class IamServiceImpl implements IamService {
     private final PasswordEncoder passwordEncoder;
-    private final IamDao iamDao;
+    private final UserDao userDao;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
@@ -43,7 +42,7 @@ public class IamServiceImpl implements IamService {
                 .build();
         AuthResponse registerResponse = AuthResponse.builder().build();
 
-        UserEntity savedUser = iamDao.save(newUser); // throws exception if got duplicates
+        UserEntity savedUser = userDao.save(newUser); // throws exception if got duplicates
         if(savedUser.getId() > 0) {
             String token = jwtService.generateToken(savedUser);
             String refreshToken = jwtService.generateRefreshToken(savedUser);
@@ -80,7 +79,7 @@ public class IamServiceImpl implements IamService {
         ));
 
         // get username and generate jwt token and refresh token
-        Optional<UserEntity> retrievedUser = iamDao.findByUsernameOrEmail(loginReq.getLogin(), loginReq.getLogin());
+        Optional<UserEntity> retrievedUser = userDao.findByUsernameOrEmail(loginReq.getLogin(), loginReq.getLogin());
         UserEntity userDetails = retrievedUser.orElseThrow(() -> new UsernameNotFoundException(loginReq.getLogin() + " not found!"));
 
         String token = jwtService.generateToken(userDetails);
@@ -147,7 +146,7 @@ public class IamServiceImpl implements IamService {
         // and endpoint doesn't need authentication to use
         currRefreshToken = cookie.getValue();
         currUsername = jwtService.extractUsername(currRefreshToken);
-        UserEntity userDetails = iamDao.findByUsername(currUsername)
+        UserEntity userDetails = userDao.findByUsername(currUsername)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("Refresh token: username %s not found!", currUsername)));
 
         AuthResponse refreshResponse = AuthResponse.builder().build();
@@ -171,25 +170,12 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public UserAccount getUserAccount(String token) {
-        String username = jwtService.extractUsername(token);
-
-        UserEntity userDetails = iamDao.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(String.format("Get user details: username %s not found!", username)));
-
-        UserAccount userAccount = new UserAccount();
-        userAccount.setUsername(userDetails.getUsername());
-
-        return userAccount;
-    }
-
-    @Override
     public Boolean checkUsernameAvailable(String username) {
-        return iamDao.findByUsername(username).isPresent();
+        return userDao.findByUsername(username).isPresent();
     }
 
     @Override
     public Boolean checkEmailAvailable(String email) {
-        return iamDao.findByEmail(email).isPresent();
+        return userDao.findByEmail(email).isPresent();
     }
 }

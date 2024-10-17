@@ -1,6 +1,6 @@
 package com.tkd.dictionaryservice.config;
 
-import com.tkd.dictionaryservice.repository.IamDao;
+import com.tkd.dictionaryservice.repository.UserDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -19,11 +19,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RequiredArgsConstructor
 public class ServiceConfig {
 
-    private final IamDao iamUserRepository;
+    private final UserDao userDao;
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return login -> iamUserRepository.findByUsernameOrEmail(login, login)
+        return login -> userDao.findByUsernameOrEmail(login, login)
                 .orElseThrow(() -> new UsernameNotFoundException(login + " not found"));
     }
 
