@@ -1,22 +1,21 @@
 package com.tkd.dictionaryservice.service;
 
-import com.tkd.dictionaryservice.dto.LogoutResponse;
-import com.tkd.dictionaryservice.dto.UserSession;
+import com.tkd.dictionaryservice.dto.AuthResponse;
 import com.tkd.models.LoginRequest;
-import com.tkd.models.LoginResponse;
 import com.tkd.models.RegistrationRequest;
 import com.tkd.models.UserAccount;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public interface IamService {
-    String registerUser(RegistrationRequest regisReq) throws Exception;
+    AuthResponse registerUser(RegistrationRequest regisReq) throws Exception;
 
-    UserSession loginUser(LoginRequest loginReq) throws Exception;
+    AuthResponse loginUser(LoginRequest loginReq) throws Exception;
 
-    LogoutResponse logoutUser();
+    AuthResponse logoutUser();
 
-    LoginResponse refreshToken(Cookie cookie) throws ExpiredJwtException;
+    AuthResponse refreshToken(Cookie cookie) throws ExpiredJwtException, UsernameNotFoundException;
 
     UserAccount getUserAccount(String token);
 

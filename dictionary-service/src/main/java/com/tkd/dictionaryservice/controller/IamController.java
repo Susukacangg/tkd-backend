@@ -1,12 +1,10 @@
 package com.tkd.dictionaryservice.controller;
 
 import com.tkd.apis.IamV1Api;
-import com.tkd.dictionaryservice.dto.LogoutResponse;
-import com.tkd.dictionaryservice.dto.UserSession;
+import com.tkd.dictionaryservice.dto.AuthResponse;
 import com.tkd.dictionaryservice.service.IamService;
 import com.tkd.dictionaryservice.utility.IamServiceUtility;
 import com.tkd.models.LoginRequest;
-import com.tkd.models.LoginResponse;
 import com.tkd.models.RegistrationRequest;
 import com.tkd.models.UserAccount;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -16,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -31,42 +30,53 @@ public class IamController implements IamV1Api {
 
     @Override
     public ResponseEntity<String> registerUser(RegistrationRequest body) {
+        AuthResponse registerResponse = AuthResponse.builder().build();
+
         try {
-            return ResponseEntity.ok(iamService.registerUser(body));
+            registerResponse = iamService.registerUser(body);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, registerResponse.getTokenCookie().toString())
+                    .header(HttpHeaders.SET_COOKIE, registerResponse.getRefreshCookie().toString())
+                    .body(registerResponse.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+            registerResponse.setMessage("User already exists!");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(registerResponse.getMessage());
         }
     }
 
     @Override
-    public ResponseEntity<LoginResponse> loginUser(LoginRequest body) {
+    public ResponseEntity<String> loginUser(LoginRequest body) {
+        AuthResponse loginResponse = AuthResponse.builder().build();
         try {
-            UserSession userSession = iamService.loginUser(body);
+            loginResponse = iamService.loginUser(body);
             return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, userSession.getResponseCookie().toString())
-                    .body(userSession.getLoginResponse());
+                    .header(HttpHeaders.SET_COOKIE, loginResponse.getTokenCookie().toString())
+                    .header(HttpHeaders.SET_COOKIE, loginResponse.getRefreshCookie().toString())
+                    .body(loginResponse.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            loginResponse.setMessage("The login ID or password provided is incorrect");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(loginResponse.getMessage());
         }
     }
 
     @Override
     public ResponseEntity<String> logoutUser() {
-        LogoutResponse logoutResponse = iamService.logoutUser();
+        AuthResponse logoutResponse = iamService.logoutUser();
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, logoutResponse.getResponseCookie().toString())
+                .header(HttpHeaders.SET_COOKIE, logoutResponse.getTokenCookie().toString())
+                .header(HttpHeaders.SET_COOKIE, logoutResponse.getRefreshCookie().toString())
                 .body(logoutResponse.getMessage());
     }
 
     @Override
-    public ResponseEntity<LoginResponse> refreshToken() {
+    public ResponseEntity<String> refreshToken() {
         Optional<HttpServletRequest> requestOptional = getRequest();
-        LoginResponse loginResponse = new LoginResponse();
 
         if(requestOptional.isPresent()) {
             HttpServletRequest request = requestOptional.get();
             Cookie[] cookies = request.getCookies();
+            AuthResponse refreshResponse = AuthResponse.builder().build();
 
             // if got cookie, means got refresh token
             if(cookies != null) {
@@ -77,16 +87,24 @@ public class IamController implements IamV1Api {
                     if(cookie.getName().equals(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY))
                         refreshTokenCookie = cookie;
 
+                // refresh the access token
                 try {
-                    return ResponseEntity.ok(iamService.refreshToken(refreshTokenCookie));
+                    refreshResponse = iamService.refreshToken(refreshTokenCookie);
+                    return ResponseEntity.ok()
+                            .header(HttpHeaders.SET_COOKIE, refreshResponse.getTokenCookie().toString())
+                            .body(refreshResponse.getMessage());
                 } catch (ExpiredJwtException e) {
-                    loginResponse.setMessage("Refresh token expired");
-                    return ResponseEntity.internalServerError().body(loginResponse);
+                    refreshResponse.setMessage("Refresh token expired");
+                    return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
+                } catch (UsernameNotFoundException e) {
+                    refreshResponse.setMessage("Invalid refresh token");
+                    log.error(e.getMessage());
+                    return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
                 }
             } else { // means no cookies, should not be calling in the first place
-                log.error("No cookie present");
-                loginResponse.setMessage("No refresh token found");
-                return ResponseEntity.internalServerError().body(loginResponse);
+                log.error("No cookie passed");
+                refreshResponse.setMessage("No refresh token found");
+                return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
             }
         }
 
@@ -99,10 +117,15 @@ public class IamController implements IamV1Api {
         Optional<HttpServletRequest> requestOptional = getRequest();
         if(requestOptional.isPresent()) {
             HttpServletRequest request = requestOptional.get();
-            // "Bearer " <- has seven characters
-            String token = request.getHeader("Authorization").substring(7);
 
-            return ResponseEntity.ok(iamService.getUserAccount(token));
+            Cookie[] cookies = request.getCookies();
+            String token = null;
+            if(cookies != null) {
+                for(Cookie cookie : cookies)
+                    if(cookie.getName().equals(IamServiceUtility.TOKEN_COOKIE_KEY))
+                        token = cookie.getValue();
+                return ResponseEntity.ok(iamService.getUserAccount(token));
+            }
         }
 
         return ResponseEntity.internalServerError().body(null);

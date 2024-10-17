@@ -52,7 +52,7 @@ public class JwtService {
     public String extractUsername(String jwtToken) {
         try {
             return extractClaim(jwtToken, Claims::getSubject);
-        } catch (MalformedJwtException e) {
+        } catch (MalformedJwtException e) { // this is to handle if the passed in token is empty
             log.error(e.getMessage());
             return null;
         }

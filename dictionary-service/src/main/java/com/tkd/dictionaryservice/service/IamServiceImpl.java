@@ -1,13 +1,11 @@
 package com.tkd.dictionaryservice.service;
 
-import com.tkd.dictionaryservice.dto.LogoutResponse;
-import com.tkd.dictionaryservice.dto.UserSession;
+import com.tkd.dictionaryservice.dto.AuthResponse;
 import com.tkd.dictionaryservice.entity.UserEntity;
 import com.tkd.dictionaryservice.entity.UserRole;
 import com.tkd.dictionaryservice.repository.IamDao;
 import com.tkd.dictionaryservice.utility.IamServiceUtility;
 import com.tkd.models.LoginRequest;
-import com.tkd.models.LoginResponse;
 import com.tkd.models.RegistrationRequest;
 
 import com.tkd.models.UserAccount;
@@ -34,7 +32,7 @@ public class IamServiceImpl implements IamService {
     private final AuthenticationManager authenticationManager;
 
     @Override
-    public String registerUser(RegistrationRequest regisReq) throws Exception {
+    public AuthResponse registerUser(RegistrationRequest regisReq) throws Exception {
         // build new user
         UserEntity newUser = UserEntity
                 .builder()
@@ -43,16 +41,39 @@ public class IamServiceImpl implements IamService {
                 .password(passwordEncoder.encode(regisReq.getPassword()))
                 .role(UserRole.USER)
                 .build();
+        AuthResponse registerResponse = AuthResponse.builder().build();
 
         UserEntity savedUser = iamDao.save(newUser); // throws exception if got duplicates
-        if(savedUser.getId() > 0)
-            return "Successfully registered!"; // set message
+        if(savedUser.getId() > 0) {
+            String token = jwtService.generateToken(savedUser);
+            String refreshToken = jwtService.generateRefreshToken(savedUser);
 
-        return null;
+            ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, token)
+                    .httpOnly(true)
+                    .sameSite("None")
+                    .secure(true)
+                    .path("/")
+                    .maxAge(60 * 15)
+                    .build();
+
+            ResponseCookie refreshCookie = ResponseCookie.from(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY, refreshToken)
+                    .httpOnly(true)
+                    .sameSite("None")
+                    .secure(true)
+                    .path("/")
+                    .maxAge(60 * 15)
+                    .build();
+
+            registerResponse.setMessage("Successfully registered!");
+            registerResponse.setTokenCookie(tokenCookie);
+            registerResponse.setRefreshCookie(refreshCookie);
+        }
+
+        return registerResponse;
     }
 
     @Override
-    public UserSession loginUser(LoginRequest loginReq) throws Exception {
+    public AuthResponse loginUser(LoginRequest loginReq) throws Exception {
         // throws exception if bad credentials
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginReq.getLogin(), loginReq.getPassword()
@@ -62,11 +83,19 @@ public class IamServiceImpl implements IamService {
         Optional<UserEntity> retrievedUser = iamDao.findByUsernameOrEmail(loginReq.getLogin(), loginReq.getLogin());
         UserEntity userDetails = retrievedUser.orElseThrow(() -> new UsernameNotFoundException(loginReq.getLogin() + " not found!"));
 
-        String jwtToken = jwtService.generateToken(userDetails);
+        String token = jwtService.generateToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         // set cookies
-        ResponseCookie responseCookie = ResponseCookie.from(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY, refreshToken)
+        ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, token)
+                .httpOnly(true)
+                .sameSite("None")
+                .secure(true)
+                .path("/")
+                .maxAge(60 * 60 * 24 * 7)
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY, refreshToken)
                 .httpOnly(true)
                 .sameSite("None")
                 .secure(true)
@@ -75,37 +104,44 @@ public class IamServiceImpl implements IamService {
                 .build();
 
         // set response body and return response
-        LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setToken(jwtToken);
-        loginResponse.setMessage("Successfully logged in!");
-
-        return UserSession.builder()
-                .loginResponse(loginResponse)
-                .responseCookie(responseCookie)
+        return AuthResponse.builder()
+                .message("Successfully logged in!")
+                .tokenCookie(tokenCookie)
+                .refreshCookie(refreshCookie)
                 .build();
     }
 
     @Override
-    public LogoutResponse logoutUser() {
-        ResponseCookie responseCookie = ResponseCookie.from(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY, "")
+    public AuthResponse logoutUser() {
+        ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, "")
                 .httpOnly(true)
+                .sameSite("None")
+                .secure(true)
                 .path("/")
                 .maxAge(0)
                 .build();
 
-        return LogoutResponse.builder()
+        ResponseCookie refreshCookie = ResponseCookie.from(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY, "")
+                .httpOnly(true)
+                .sameSite("None")
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        return AuthResponse.builder()
                 .message("Successfully logged out!")
-                .responseCookie(responseCookie)
+                .tokenCookie(tokenCookie)
+                .refreshCookie(refreshCookie)
                 .build();
     }
 
     @Override
-    public LoginResponse refreshToken(Cookie cookie) throws ExpiredJwtException {
+    public AuthResponse refreshToken(Cookie cookie) throws ExpiredJwtException, UsernameNotFoundException {
         // validate the refresh token
         // generate a new jwt token
         // return the jwt token, username, and message
         String currRefreshToken, currUsername;
-        LoginResponse loginResponse = new LoginResponse();
 
         // have to catch error because the passed token may be expired
         // and endpoint doesn't need authentication to use
@@ -114,12 +150,24 @@ public class IamServiceImpl implements IamService {
         UserEntity userDetails = iamDao.findByUsername(currUsername)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("Refresh token: username %s not found!", currUsername)));
 
-        if (jwtService.isTokenValid(currRefreshToken, userDetails))
-            loginResponse.setToken(jwtService.generateToken(userDetails));
-        else
-            loginResponse.setMessage("Invalid refresh token");
+        AuthResponse refreshResponse = AuthResponse.builder().build();
+        String token;
+        if (jwtService.isTokenValid(currRefreshToken, userDetails)) {
+            token = jwtService.generateToken(userDetails);
 
-        return loginResponse;
+            ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, token)
+                    .httpOnly(true)
+                    .sameSite("None")
+                    .secure(true)
+                    .path("/")
+                    .maxAge(60 * 15)
+                    .build();
+
+            refreshResponse.setTokenCookie(tokenCookie);
+            refreshResponse.setMessage("Refreshed token");
+        }
+
+        return refreshResponse;
     }
 
     @Override

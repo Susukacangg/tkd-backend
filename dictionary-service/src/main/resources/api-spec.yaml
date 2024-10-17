@@ -29,8 +29,6 @@ paths:
             application/json:
               schema:
                 type: string
-        "409":
-          description: Similar credentials already registered
   /auth/login:
     post:
       tags:
@@ -50,7 +48,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LoginResponse"
+                type: string
   /auth/logout:
     post:
       tags:
@@ -76,7 +74,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LoginResponse"
+                type: string
   /auth/get-user-details:
     get:
       tags:
@@ -148,13 +146,6 @@ components:
         login:
           type: string
         password:
-          type: string
-    LoginResponse:
-      type: object
-      properties:
-        token:
-          type: string
-        message:
           type: string
     UserAccount:
       type: object

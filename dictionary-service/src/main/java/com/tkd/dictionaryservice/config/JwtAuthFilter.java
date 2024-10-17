@@ -1,9 +1,11 @@
 package com.tkd.dictionaryservice.config;
 
 import com.tkd.dictionaryservice.service.JwtService;
+import com.tkd.dictionaryservice.utility.IamServiceUtility;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -33,17 +35,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
+        Cookie[] cookies = request.getCookies();
+        Cookie accessTokenCookie = null;
+
+        // find the access token cookie
+        if (cookies != null)
+            for (Cookie cookie : cookies)
+                if (cookie.getName().equals(IamServiceUtility.TOKEN_COOKIE_KEY))
+                    accessTokenCookie = cookie;
 
         // if dun have token
-        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if(accessTokenCookie == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        log.info(accessTokenCookie.getValue());
+
         try {
             final String jwtToken, username;
-            jwtToken = authHeader.substring(7);
+            jwtToken = accessTokenCookie.getValue();
             username = jwtService.extractUsername(jwtToken);
 
             // second statement checks if user is not yet authenticated

@@ -6,7 +6,8 @@ import org.springframework.http.ResponseCookie;
 
 @Data
 @Builder
-public class LogoutResponse {
+public class AuthResponse {
     private String message;
-    private ResponseCookie responseCookie;
+    private ResponseCookie tokenCookie;
+    private ResponseCookie refreshCookie;
 }
