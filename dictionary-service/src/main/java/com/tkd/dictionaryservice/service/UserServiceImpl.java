@@ -3,6 +3,7 @@ package com.tkd.dictionaryservice.service;
 import com.tkd.dictionaryservice.entity.UserEntity;
 import com.tkd.dictionaryservice.repository.UserDao;
 import com.tkd.models.UserAccount;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,7 @@ public class UserServiceImpl implements UserService {
     private final UserDao userDao;
 
     @Override
-    public UserAccount getUserDetails(String token) {
+    public UserAccount getUserDetails(String token) throws UsernameNotFoundException, ExpiredJwtException {
         String username = jwtService.extractUsername(token);
 
         UserEntity userDetails = userDao.findByUsername(username)

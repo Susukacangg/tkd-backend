@@ -72,43 +72,47 @@ public class IamController implements IamV1Api {
     public ResponseEntity<String> refreshToken() {
         Optional<HttpServletRequest> requestOptional = getRequest();
 
-        if(requestOptional.isPresent()) {
-            HttpServletRequest request = requestOptional.get();
-            Cookie[] cookies = request.getCookies();
-            AuthResponse refreshResponse = AuthResponse.builder().build();
+        // don't have http request
+        if(requestOptional.isEmpty())
+            return ResponseEntity.internalServerError().body(null);
 
-            // if got cookie, means got refresh token
-            if(cookies != null) {
-                Cookie refreshTokenCookie = null;
+        HttpServletRequest request = requestOptional.get();
+        Cookie[] cookies = request.getCookies();
+        AuthResponse refreshResponse = AuthResponse.builder().build();
+        refreshResponse.setMessage("Refresh token error");
 
-                // find for the refresh token cookie
-                for (Cookie cookie : cookies)
-                    if(cookie.getName().equals(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY))
-                        refreshTokenCookie = cookie;
-
-                // refresh the access token
-                try {
-                    refreshResponse = iamService.refreshToken(refreshTokenCookie);
-                    return ResponseEntity.ok()
-                            .header(HttpHeaders.SET_COOKIE, refreshResponse.getTokenCookie().toString())
-                            .body(refreshResponse.getMessage());
-                } catch (ExpiredJwtException e) {
-                    refreshResponse.setMessage("Refresh token expired");
-                    return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
-                } catch (UsernameNotFoundException e) {
-                    refreshResponse.setMessage("Invalid refresh token");
-                    log.error(e.getMessage());
-                    return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
-                }
-            } else { // means no cookies, should not be calling in the first place
-                log.error("No cookie passed");
-                refreshResponse.setMessage("No refresh token found");
-                return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
-            }
+        // NO COOKIES, should not be calling in the first place
+        if(cookies == null) {
+            log.error("No cookie passed");
+            return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
         }
 
-        // don't have http request
-        return ResponseEntity.internalServerError().body(null);
+        // find for the refresh token cookie
+        Cookie refreshTokenCookie = null;
+        for (Cookie cookie : cookies)
+            if(cookie.getName().equals(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY))
+                refreshTokenCookie = cookie;
+
+        // NO REFRESH TOKEN
+        if(refreshTokenCookie == null) {
+            log.error("No refresh token cookie");
+            return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
+        }
+
+        // refresh the access token
+        try {
+            refreshResponse = iamService.refreshToken(refreshTokenCookie);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, refreshResponse.getTokenCookie().toString())
+                    .body(refreshResponse.getMessage());
+        } catch (ExpiredJwtException e) {
+            log.error("Refresh token expired");
+            return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
+        } catch (UsernameNotFoundException e) {
+            log.error(e.getMessage());
+            log.error("Invalid refresh token");
+            return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
+        }
     }
 
     @Override

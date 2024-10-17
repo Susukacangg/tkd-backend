@@ -50,8 +50,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        log.info(accessTokenCookie.getValue());
-
         try {
             final String jwtToken, username;
             jwtToken = accessTokenCookie.getValue();
