@@ -1,6 +1,7 @@
 package com.tkd.iamservice.config;
 
 import com.tkd.iamservice.repository.UserDao;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -13,13 +14,29 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-public class ServiceConfig {
+public class IamServiceConfig {
 
     private final UserDao userDao;
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(@NonNull CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("https://localhost:5173")
+                        .allowCredentials(true)
+                        .allowedHeaders("*")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE");
+            }
+        };
+    }
 
     @Bean
     public UserDetailsService userDetailsService() {
