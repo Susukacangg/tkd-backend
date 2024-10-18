@@ -1,4 +1,4 @@
-package com.tkd.dictionaryservice.utility;
+package com.tkd.iamservice.utility;
 
 
 public class IamServiceUtility {

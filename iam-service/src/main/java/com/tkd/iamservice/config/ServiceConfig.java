@@ -1,6 +1,6 @@
-package com.tkd.dictionaryservice.config;
+package com.tkd.iamservice.config;
 
-import com.tkd.dictionaryservice.repository.UserDao;
+import com.tkd.iamservice.repository.UserDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;

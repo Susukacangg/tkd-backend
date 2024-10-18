@@ -1,8 +1,8 @@
-package com.tkd.dictionaryservice.controller;
+package com.tkd.iamservice.controller;
 
 import com.tkd.apis.UserV1Api;
-import com.tkd.dictionaryservice.service.UserService;
-import com.tkd.dictionaryservice.utility.IamServiceUtility;
+import com.tkd.iamservice.service.UserService;
+import com.tkd.iamservice.utility.IamServiceUtility;
 import com.tkd.models.UserAccount;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;

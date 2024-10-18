@@ -1,4 +1,4 @@
-package com.tkd.dictionaryservice.entity;
+package com.tkd.iamservice.entity;
 
 public enum UserRole {
     ADMIN,

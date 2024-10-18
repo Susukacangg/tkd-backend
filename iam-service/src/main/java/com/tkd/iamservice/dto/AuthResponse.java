@@ -1,4 +1,4 @@
-package com.tkd.dictionaryservice.dto;
+package com.tkd.iamservice.dto;
 
 import lombok.Builder;
 import lombok.Data;

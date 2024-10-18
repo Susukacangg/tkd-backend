@@ -1,10 +1,10 @@
-package com.tkd.dictionaryservice.service;
+package com.tkd.iamservice.service;
 
-import com.tkd.dictionaryservice.dto.AuthResponse;
-import com.tkd.dictionaryservice.entity.UserEntity;
-import com.tkd.dictionaryservice.entity.UserRole;
-import com.tkd.dictionaryservice.repository.UserDao;
-import com.tkd.dictionaryservice.utility.IamServiceUtility;
+import com.tkd.iamservice.dto.AuthResponse;
+import com.tkd.iamservice.entity.UserEntity;
+import com.tkd.iamservice.entity.UserRole;
+import com.tkd.iamservice.repository.UserDao;
+import com.tkd.iamservice.utility.IamServiceUtility;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
 

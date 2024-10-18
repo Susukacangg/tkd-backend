@@ -1,7 +1,7 @@
-package com.tkd.dictionaryservice.config;
+package com.tkd.iamservice.config;
 
-import com.tkd.dictionaryservice.service.JwtService;
-import com.tkd.dictionaryservice.utility.IamServiceUtility;
+import com.tkd.iamservice.service.JwtService;
+import com.tkd.iamservice.utility.IamServiceUtility;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

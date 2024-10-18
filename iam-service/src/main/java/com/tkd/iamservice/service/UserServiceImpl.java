@@ -1,7 +1,7 @@
-package com.tkd.dictionaryservice.service;
+package com.tkd.iamservice.service;
 
-import com.tkd.dictionaryservice.entity.UserEntity;
-import com.tkd.dictionaryservice.repository.UserDao;
+import com.tkd.iamservice.entity.UserEntity;
+import com.tkd.iamservice.repository.UserDao;
 import com.tkd.models.UserAccount;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;

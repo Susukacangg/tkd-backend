@@ -1,4 +1,4 @@
-package com.tkd.dictionaryservice.service;
+package com.tkd.iamservice.service;
 
 import com.tkd.models.UserAccount;
 import io.jsonwebtoken.ExpiredJwtException;

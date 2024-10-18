@@ -1,4 +1,4 @@
-package com.tkd.dictionaryservice.entity;
+package com.tkd.iamservice.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

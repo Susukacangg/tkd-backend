@@ -1,4 +1,4 @@
-package com.tkd.dictionaryservice.service;
+package com.tkd.iamservice.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

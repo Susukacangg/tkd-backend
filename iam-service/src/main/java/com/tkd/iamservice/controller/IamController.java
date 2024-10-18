@@ -1,9 +1,9 @@
-package com.tkd.dictionaryservice.controller;
+package com.tkd.iamservice.controller;
 
 import com.tkd.apis.IamV1Api;
-import com.tkd.dictionaryservice.dto.AuthResponse;
-import com.tkd.dictionaryservice.service.IamService;
-import com.tkd.dictionaryservice.utility.IamServiceUtility;
+import com.tkd.iamservice.dto.AuthResponse;
+import com.tkd.iamservice.service.IamService;
+import com.tkd.iamservice.utility.IamServiceUtility;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
 import io.jsonwebtoken.ExpiredJwtException;

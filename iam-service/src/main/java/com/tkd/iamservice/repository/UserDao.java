@@ -1,6 +1,6 @@
-package com.tkd.dictionaryservice.repository;
+package com.tkd.iamservice.repository;
 
-import com.tkd.dictionaryservice.entity.UserEntity;
+import com.tkd.iamservice.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

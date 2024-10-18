@@ -1,4 +1,4 @@
-package com.tkd.dictionaryservice;
+package com.tkd.iamservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

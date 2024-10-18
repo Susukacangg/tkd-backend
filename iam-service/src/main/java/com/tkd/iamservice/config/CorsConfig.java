@@ -1,4 +1,4 @@
-package com.tkd.dictionaryservice.config;
+package com.tkd.iamservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
