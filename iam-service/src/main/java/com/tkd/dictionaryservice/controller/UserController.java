@@ -26,6 +26,7 @@ public class UserController implements UserV1Api {
     @Override
     public ResponseEntity<UserAccount> getUserDetails() {
         Optional<HttpServletRequest> requestOptional = getRequest();
+        log.info("get user details");
 
         if(requestOptional.isEmpty())
             return ResponseEntity.internalServerError().body(null);
