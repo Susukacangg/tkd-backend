@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+}
+
+// Disable the 'bootJar' task since this is not a Spring Boot application
+tasks.named('bootJar') {
+    enabled = false
+}
+
+// Keep the standard jar task
+tasks.named('jar') {
+    enabled = true
+}
