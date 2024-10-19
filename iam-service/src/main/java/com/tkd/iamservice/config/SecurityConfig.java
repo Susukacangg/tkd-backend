@@ -1,5 +1,6 @@
 package com.tkd.iamservice.config;
 
+import com.tkd.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,25 +17,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    /*private static final String[] URL_WHITELIST = {
-            "/auth/**",
-            "/v3/api-docs",
-            "/v3/api-docs/**",
-            "/swagger-resources",
-            "/swagger-resources/**",
-            "/configuration/ui",
-            "/configuration/security",
-            "/swagger-ui/**",
-            "/webjars/**",
-            "/swagger-ui.html",
-    };*/
-
-    private static final String[] URL_BLACKLIST = {
-            "/auth/get-user-details"
-    };
 
     private final JwtAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authProvider;
+
+    private final String[] URL_BLACKLIST = {
+            "/user/details"
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

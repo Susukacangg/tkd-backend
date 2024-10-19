@@ -1,2 +1,2 @@
 rootProject.name = 'tkd-backend'
-include 'iam-service'
+include 'iam-service', 'dictionary-service', 'security-module'

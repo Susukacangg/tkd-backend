@@ -3,8 +3,8 @@ package com.tkd.iamservice.service;
 import com.tkd.iamservice.dto.AuthResponse;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
+import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public interface IamService {
@@ -14,7 +14,7 @@ public interface IamService {
 
     AuthResponse logoutUser();
 
-    AuthResponse refreshToken(Cookie cookie) throws ExpiredJwtException, UsernameNotFoundException;
+    AuthResponse refreshToken(Cookie cookie) throws UsernameNotFoundException, IllegalStateException, AccountExpiredException;
 
     Boolean checkUsernameAvailable(String username);
 

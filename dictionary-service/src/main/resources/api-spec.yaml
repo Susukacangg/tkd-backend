@@ -1,0 +1,154 @@
+openapi: 3.0.0
+info:
+  title: API Spec for TKD
+  description: API Endpoint descriptions for TKD
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8081
+    description: Local development server
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - IamV1
+      operationId: registerUser
+      summary: Register user into database and return token
+      requestBody:
+        description: The user information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationRequest"
+      responses:
+        "200":
+          description: Registration feedback message
+          content:
+            application/json:
+              schema:
+                type: string
+  /auth/login:
+    post:
+      tags:
+        - IamV1
+      operationId: loginUser
+      summary: Authenticate and authorize user. Return tokens.
+      requestBody:
+        description: Login information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: The token and response messages
+          content:
+            application/json:
+              schema:
+                type: string
+  /auth/logout:
+    post:
+      tags:
+        - IamV1
+      operationId: logoutUser
+      summary: Logout user.
+      responses:
+        "200":
+          description: Response message after logout
+          content:
+            application/json:
+              schema:
+                type: string
+  /auth/refresh:
+    post:
+      tags:
+        - IamV1
+      operationId: refreshToken
+      summary: Refresh JWT token based on refresh token
+      responses:
+        "200":
+          description: The new JWT token and username of the current user
+          content:
+            application/json:
+              schema:
+                type: string
+  /auth/check-username:
+    get:
+      tags:
+        - IamV1
+      operationId: checkUsernameAvailable
+      summary: Check whether username is already in use.
+      parameters:
+        - in: query
+          name: username
+          schema:
+            type: string
+          required: true
+          description: The username to be checked
+      responses:
+        "200":
+          description: Just return a boolean whether it's already in use or not
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /auth/check-email:
+    get:
+      tags:
+        - IamV1
+      operationId: checkEmailAvailable
+      summary: Check whether email is already registered.
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+          required: true
+          description: The email to be checked
+      responses:
+        "200":
+          description: Just return a boolean whether it's already registered or not
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /user/details:
+    get:
+      tags:
+        - UserV1
+      operationId: getUserDetails
+      summary: Get the details of the logged in user
+      responses:
+        "200":
+          description: Object holding details of the user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserAccount"
+
+components:
+  schemas:
+    RegistrationRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    LoginRequest:
+      type: object
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+    UserAccount:
+      type: object
+      properties:
+        username:
+          type: string

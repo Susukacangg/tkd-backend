@@ -8,11 +8,12 @@ import com.tkd.iamservice.utility.IamServiceUtility;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
 
-import io.jsonwebtoken.ExpiredJwtException;
+import com.tkd.security.JwtService;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -136,7 +137,7 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public AuthResponse refreshToken(Cookie cookie) throws ExpiredJwtException, UsernameNotFoundException {
+    public AuthResponse refreshToken(Cookie cookie) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException {
         // validate the refresh token
         // generate a new jwt token
         // return the jwt token, username, and message

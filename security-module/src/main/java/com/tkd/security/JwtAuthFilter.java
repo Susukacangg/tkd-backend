@@ -1,33 +1,30 @@
-package com.tkd.iamservice.config;
+package com.tkd.security;
 
-import com.tkd.iamservice.service.JwtService;
-import com.tkd.iamservice.utility.IamServiceUtility;
 import io.jsonwebtoken.ExpiredJwtException;
-import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -41,7 +38,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // find the access token cookie
         if (cookies != null)
             for (Cookie cookie : cookies)
-                if (cookie.getName().equals(IamServiceUtility.TOKEN_COOKIE_KEY))
+                if (cookie.getName().equals("token"))
                     accessTokenCookie = cookie;
 
         // if dun have token
@@ -58,7 +55,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             // second statement checks if user is not yet authenticated
             // tapi ada la tu user yang 'kunun' mau connect (first statement)
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
                 if(jwtService.isTokenValid(jwtToken, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -77,3 +74,4 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     }
 }
+

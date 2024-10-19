@@ -6,14 +6,12 @@ import com.tkd.iamservice.service.IamService;
 import com.tkd.iamservice.utility.IamServiceUtility;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -105,12 +103,8 @@ public class IamController implements IamV1Api {
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, refreshResponse.getTokenCookie().toString())
                     .body(refreshResponse.getMessage());
-        } catch (ExpiredJwtException e) {
-            log.error("Refresh token expired");
-            return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
-        } catch (UsernameNotFoundException e) {
+        } catch (Exception e) {
             log.error(e.getMessage());
-            log.error("Invalid refresh token");
             return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
         }
     }

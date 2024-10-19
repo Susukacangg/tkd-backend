@@ -1,11 +1,13 @@
-package com.tkd.iamservice.service;
+package com.tkd.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -24,21 +26,17 @@ public class JwtService {
     @Value("${project.security.jwt.secret-key}")
     private String SECRET_KEY;
 
-    @Value("${project.security.jwt.expiration}")
-    private long TOKEN_EXPIRATION_PERIOD;
-
-    @Value("${project.security.jwt.refresh-token.expiration}")
-    private long REFRESH_TOKEN_EXPIRATION_PERIOD;
-
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        final long TOKEN_EXPIRATION_PERIOD = 900000;
         return buildToken(extraClaims, userDetails, TOKEN_EXPIRATION_PERIOD);
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
+        final long REFRESH_TOKEN_EXPIRATION_PERIOD = 604800000;
         return buildToken(new HashMap<>(), userDetails, REFRESH_TOKEN_EXPIRATION_PERIOD);
     }
 
@@ -49,12 +47,15 @@ public class JwtService {
         return (currUsername.equals(userDetails.getUsername()));
     }
 
-    public String extractUsername(String jwtToken) {
+    public String extractUsername(String jwtToken) throws IllegalArgumentException, AccountExpiredException {
         try {
             return extractClaim(jwtToken, Claims::getSubject);
-        } catch (MalformedJwtException e) { // this is to handle if the passed in token is empty
+        } catch (MalformedJwtException e) {
             log.error(e.getMessage());
-            return null;
+            throw new IllegalArgumentException(String.format("Invalid JWT token: %s", jwtToken));
+        } catch (ExpiredJwtException e) {
+            log.error(e.getMessage());
+            throw new AccountExpiredException(String.format("Expired JWT token: %s", jwtToken));
         }
     }
 

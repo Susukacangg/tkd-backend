@@ -4,12 +4,12 @@ import com.tkd.apis.UserV1Api;
 import com.tkd.iamservice.service.UserService;
 import com.tkd.iamservice.utility.IamServiceUtility;
 import com.tkd.models.UserAccount;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -50,15 +50,13 @@ public class UserController implements UserV1Api {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-
         try {
             return ResponseEntity.ok(userService.getUserDetails(tokenCookie.getValue()));
-        } catch (ExpiredJwtException e) {
-            log.error("Token expired getting user details");
+        } catch (AccountExpiredException | IllegalArgumentException e) {
+            log.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         } catch (UsernameNotFoundException e) {
             log.error(e.getMessage());
-            log.error("Invalid refresh token getting user details");
             return ResponseEntity.internalServerError().body(null);
         }
     }
