@@ -118,7 +118,7 @@ paths:
   /user/details:
     get:
       tags:
-        - UserV1
+        - IamV1
       operationId: getUserDetails
       summary: Get the details of the logged in user
       responses:

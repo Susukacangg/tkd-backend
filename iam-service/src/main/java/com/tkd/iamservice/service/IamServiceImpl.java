@@ -8,6 +8,7 @@ import com.tkd.iamservice.utility.IamServiceUtility;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
 
+import com.tkd.models.UserAccount;
 import com.tkd.security.JwtService;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
@@ -178,5 +179,18 @@ public class IamServiceImpl implements IamService {
     @Override
     public Boolean checkEmailAvailable(String email) {
         return userDao.findByEmail(email).isPresent();
+    }
+
+    @Override
+    public UserAccount getUserDetails(String token) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException {
+        String username = jwtService.extractUsername(token);
+
+        UserEntity userDetails = userDao.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(String.format("Get user details: username %s not found!", username)));
+
+        UserAccount userAccount = new UserAccount();
+        userAccount.setUsername(userDetails.getUsername());
+
+        return userAccount;
     }
 }

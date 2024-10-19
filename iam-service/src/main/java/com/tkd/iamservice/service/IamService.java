@@ -3,6 +3,7 @@ package com.tkd.iamservice.service;
 import com.tkd.iamservice.dto.AuthResponse;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
+import com.tkd.models.UserAccount;
 import jakarta.servlet.http.Cookie;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,4 +20,6 @@ public interface IamService {
     Boolean checkUsernameAvailable(String username);
 
     Boolean checkEmailAvailable(String email);
+
+    UserAccount getUserDetails(String username) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException;
 }
