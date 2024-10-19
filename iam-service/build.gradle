@@ -1,4 +1,4 @@
-swaggerSources.apiSpec.code.inputFile = file("${projectDir}/src/main/resources/api-spec.yaml")
+swaggerSources.apiSpec.code.inputFile = file("${projectDir}/src/main/resources/iam-api.yaml")
 
 dependencies {
     implementation project(':security-module')
