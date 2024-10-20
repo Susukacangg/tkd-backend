@@ -1,4 +1,4 @@
-package com.tkd.dictionaryservice.entity;
+package com.tkd.dictionaryservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

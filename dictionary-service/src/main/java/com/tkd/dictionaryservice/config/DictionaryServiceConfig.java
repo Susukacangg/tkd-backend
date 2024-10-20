@@ -1,8 +1,8 @@
 package com.tkd.dictionaryservice.config;
 
 import com.tkd.dictionaryservice.dto.IamUserDetails;
-import com.tkd.dictionaryservice.entity.IamUser;
-import com.tkd.dictionaryservice.entity.UserRole;
+import com.tkd.dictionaryservice.dto.IamUser;
+import com.tkd.dictionaryservice.dto.UserRole;
 import com.tkd.dictionaryservice.feign.IamFeignService;
 import com.tkd.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
