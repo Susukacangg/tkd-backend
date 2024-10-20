@@ -1,0 +1,59 @@
+openapi: 3.0.0
+info:
+  title: Dictionary service API Spec for TKD
+  description: Endpoints for dictionary related functions
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8082
+    description: Local development server
+
+paths:
+  /dict/add:
+    post:
+      tags:
+        - DictV1
+      operationId: addToDictionary
+      summary: Add a new word or phrase to the dictionary
+      requestBody:
+        description: The submitted word or phrase details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewWordRequest"
+      responses:
+        "200":
+          description: Contribution feedback
+          content:
+            application/json:
+              schema:
+                type: string
+
+components:
+  schemas:
+    NewWordRequest:
+      type: object
+      properties:
+        word:
+          type: string
+        translations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Translation'
+        usageExamples:
+          type: array
+          items:
+            $ref: '#/components/schemas/UsageExample'
+    Translation:
+      type: object
+      properties:
+        translation:
+          type: string
+    UsageExample:
+      type: object
+      properties:
+        example:
+          type: string
+        exampleTranslation:
+          type: string

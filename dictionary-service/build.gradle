@@ -1,5 +1,6 @@
-swaggerSources.apiSpec.code.inputFile = file("${projectDir}/src/main/resources/api-spec.yaml")
+swaggerSources.apiSpec.code.inputFile = file("${projectDir}/src/main/resources/dictionary-api.yaml")
 
 dependencies {
     implementation project(':security-module')
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.1.3'
 }
