@@ -121,6 +121,13 @@ paths:
         - IamV1
       operationId: getUserDetails
       summary: Get the details of the logged in user
+      parameters:
+        - in: query
+          name: includeId
+          schema:
+            type: boolean
+          required: true
+          description: specifies whether the ID of the user should be returned
       responses:
         "200":
           description: Object holding details of the user
@@ -133,7 +140,7 @@ paths:
       tags:
         - IamV1
       operationId: getIamUserDetails
-      summary: Get the details of IamUser that wants to authenticate
+      summary: Get the details of IamUser for authentication only
       parameters:
         - in: header
           name: X-internal-call
@@ -147,7 +154,7 @@ paths:
           required: true
       responses:
         "200":
-          description: Object holding details of IamUser
+          description: Object holding basic details of IamUser
           content:
             application/json:
               schema:
@@ -174,6 +181,8 @@ components:
     UserAccount:
       type: object
       properties:
+        id:
+          type: number
         username:
           type: string
     IamUserDetails:

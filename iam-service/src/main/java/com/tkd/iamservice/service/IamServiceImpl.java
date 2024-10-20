@@ -22,6 +22,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @Slf4j
@@ -183,7 +184,7 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public UserAccount getUserDetails(String token) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException {
+    public UserAccount getUserDetails(String token, boolean includeId) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException {
         String username = jwtService.extractUsername(token);
 
         IamUser userDetails = userDao.findByUsername(username)
@@ -191,6 +192,8 @@ public class IamServiceImpl implements IamService {
 
         UserAccount userAccount = new UserAccount();
         userAccount.setUsername(userDetails.getUsername());
+        if (includeId)
+            userAccount.setId(BigDecimal.valueOf(userDetails.getId()));
 
         return userAccount;
     }

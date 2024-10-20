@@ -124,7 +124,7 @@ public class IamController implements IamV1Api {
     }
 
     @Override
-    public ResponseEntity<UserAccount> getUserDetails() {
+    public ResponseEntity<UserAccount> getUserDetails(Boolean includeId) {
         Optional<HttpServletRequest> requestOptional = getRequest();
         log.info("get user details");
 
@@ -151,7 +151,7 @@ public class IamController implements IamV1Api {
         }
 
         try {
-            return ResponseEntity.ok(iamService.getUserDetails(tokenCookie.getValue()));
+            return ResponseEntity.ok(iamService.getUserDetails(tokenCookie.getValue(), includeId));
         } catch (AccountExpiredException | IllegalArgumentException e) {
             log.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
