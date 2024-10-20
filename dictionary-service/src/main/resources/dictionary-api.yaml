@@ -21,7 +21,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DictionaryWord"
+              $ref: "#/components/schemas/Word"
       responses:
         "200":
           description: Contribution feedback
@@ -32,7 +32,7 @@ paths:
 
 components:
   schemas:
-    DictionaryWord:
+    Word:
       type: object
       properties:
         word:

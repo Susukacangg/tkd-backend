@@ -12,11 +12,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "dictionary_word")
-public class Word {
+public class DictionaryWord {
     @Id
     @GeneratedValue
     private Long wordId;
 
     @Column(nullable = false)
     private String word;
+
+    @Column(nullable = false)
+    private Long userId;
 }
