@@ -14,7 +14,7 @@ public class IamServiceConfig {
 
     @Bean
     public CustomUserDetailsService customUserDetailsService() {
-        return username -> userDao.findByUsername(username)
+        return username -> userDao.findByUsernameOrEmail(username, username)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("CustomUserDetailsService: User %s not found", username)));
     }
 }

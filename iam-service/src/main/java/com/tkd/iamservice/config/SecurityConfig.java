@@ -19,10 +19,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final InternalRequestFilter internalRequestFilter;
     private final AuthenticationProvider authProvider;
 
     private final String[] URL_BLACKLIST = {
-            "/user/details"
+            "/user/details",
     };
 
     @Bean
@@ -36,7 +37,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authProvider)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(internalRequestFilter, JwtAuthFilter.class);
 
         return http.build();
     }

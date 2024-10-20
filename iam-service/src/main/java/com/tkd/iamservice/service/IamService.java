@@ -1,6 +1,7 @@
 package com.tkd.iamservice.service;
 
 import com.tkd.iamservice.dto.AuthResponse;
+import com.tkd.models.IamUserDetails;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
 import com.tkd.models.UserAccount;
@@ -22,4 +23,6 @@ public interface IamService {
     Boolean checkEmailAvailable(String email);
 
     UserAccount getUserDetails(String username) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException;
+
+    IamUserDetails getIamUserDetails(String loginId) throws UsernameNotFoundException;
 }

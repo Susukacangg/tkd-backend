@@ -1,10 +1,11 @@
 package com.tkd.iamservice.service;
 
 import com.tkd.iamservice.dto.AuthResponse;
-import com.tkd.iamservice.entity.UserEntity;
+import com.tkd.iamservice.entity.IamUser;
 import com.tkd.iamservice.entity.UserRole;
 import com.tkd.iamservice.repository.UserDao;
 import com.tkd.iamservice.utility.IamServiceUtility;
+import com.tkd.models.IamUserDetails;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
 
@@ -35,7 +36,7 @@ public class IamServiceImpl implements IamService {
     @Override
     public AuthResponse registerUser(RegistrationRequest regisReq) throws Exception {
         // build new user
-        UserEntity newUser = UserEntity
+        IamUser newUser = IamUser
                 .builder()
                 .email(regisReq.getEmail())
                 .username(regisReq.getUsername())
@@ -44,7 +45,7 @@ public class IamServiceImpl implements IamService {
                 .build();
         AuthResponse registerResponse = AuthResponse.builder().build();
 
-        UserEntity savedUser = userDao.save(newUser); // throws exception if got duplicates
+        IamUser savedUser = userDao.save(newUser); // throws exception if got duplicates
         if(savedUser.getId() > 0) {
             String token = jwtService.generateToken(savedUser);
             String refreshToken = jwtService.generateRefreshToken(savedUser);
@@ -81,8 +82,8 @@ public class IamServiceImpl implements IamService {
         ));
 
         // get username and generate jwt token and refresh token
-        Optional<UserEntity> retrievedUser = userDao.findByUsernameOrEmail(loginReq.getLogin(), loginReq.getLogin());
-        UserEntity userDetails = retrievedUser.orElseThrow(() -> new UsernameNotFoundException(loginReq.getLogin() + " not found!"));
+        Optional<IamUser> retrievedUser = userDao.findByUsernameOrEmail(loginReq.getLogin(), loginReq.getLogin());
+        IamUser userDetails = retrievedUser.orElseThrow(() -> new UsernameNotFoundException(loginReq.getLogin() + " not found!"));
 
         String token = jwtService.generateToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
@@ -148,7 +149,7 @@ public class IamServiceImpl implements IamService {
         // and endpoint doesn't need authentication to use
         currRefreshToken = cookie.getValue();
         currUsername = jwtService.extractUsername(currRefreshToken);
-        UserEntity userDetails = userDao.findByUsername(currUsername)
+        IamUser userDetails = userDao.findByUsername(currUsername)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("Refresh token: username %s not found!", currUsername)));
 
         AuthResponse refreshResponse = AuthResponse.builder().build();
@@ -185,12 +186,25 @@ public class IamServiceImpl implements IamService {
     public UserAccount getUserDetails(String token) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException {
         String username = jwtService.extractUsername(token);
 
-        UserEntity userDetails = userDao.findByUsername(username)
+        IamUser userDetails = userDao.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("Get user details: username %s not found!", username)));
 
         UserAccount userAccount = new UserAccount();
         userAccount.setUsername(userDetails.getUsername());
 
         return userAccount;
+    }
+
+    @Override
+    public IamUserDetails getIamUserDetails(String loginId) throws UsernameNotFoundException {
+        IamUser userDetails = userDao.findByUsernameOrEmail(loginId, loginId)
+                .orElseThrow(() -> new UsernameNotFoundException(String.format("Get user details: username %s not found!", loginId)));
+
+        IamUserDetails iamUserDetails = new IamUserDetails();
+        iamUserDetails.setUsername(userDetails.getUsername());
+        iamUserDetails.setPassword(userDetails.getPassword());
+        iamUserDetails.setRole(userDetails.getRole().toString());
+
+        return iamUserDetails;
     }
 }

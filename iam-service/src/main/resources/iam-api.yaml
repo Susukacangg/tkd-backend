@@ -128,6 +128,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserAccount"
+  /internal/user/details:
+    get:
+      tags:
+        - IamV1
+      operationId: getIamUserDetails
+      summary: Get the details of IamUser that wants to authenticate
+      parameters:
+        - in: header
+          name: X-internal-call
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: loginId
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Object holding details of IamUser
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IamUserDetails"
 
 components:
   schemas:
@@ -151,4 +175,13 @@ components:
       type: object
       properties:
         username:
+          type: string
+    IamUserDetails:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        role:
           type: string

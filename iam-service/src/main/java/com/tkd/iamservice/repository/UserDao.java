@@ -1,16 +1,16 @@
 package com.tkd.iamservice.repository;
 
-import com.tkd.iamservice.entity.UserEntity;
+import com.tkd.iamservice.entity.IamUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface UserDao extends JpaRepository<UserEntity, Long> {
-    Optional<UserEntity> findByUsername(String username);
+public interface UserDao extends JpaRepository<IamUser, Long> {
+    Optional<IamUser> findByUsername(String username);
 
-    Optional<UserEntity> findByEmail(String email);
+    Optional<IamUser> findByEmail(String email);
 
-    Optional<UserEntity> findByUsernameOrEmail(String username, String email);
+    Optional<IamUser> findByUsernameOrEmail(String username, String email);
 }

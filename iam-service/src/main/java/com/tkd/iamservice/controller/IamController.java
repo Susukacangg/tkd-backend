@@ -4,6 +4,7 @@ import com.tkd.apis.IamV1Api;
 import com.tkd.iamservice.dto.AuthResponse;
 import com.tkd.iamservice.service.IamService;
 import com.tkd.iamservice.utility.IamServiceUtility;
+import com.tkd.models.IamUserDetails;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
 import com.tkd.models.UserAccount;
@@ -157,6 +158,16 @@ public class IamController implements IamV1Api {
         } catch (UsernameNotFoundException e) {
             log.error(e.getMessage());
             return ResponseEntity.internalServerError().body(null);
+        }
+    }
+
+    @Override
+    public ResponseEntity<IamUserDetails> getIamUserDetails(String xInternalCall, String loginId) {
+        try {
+            return ResponseEntity.ok(iamService.getIamUserDetails(loginId));
+        } catch (UsernameNotFoundException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.notFound().build();
         }
     }
 
