@@ -50,8 +50,8 @@ public class DictionaryController implements DictV1Api {
                 .path(tokenCookie.getPath())
                 .maxAge(tokenCookie.getMaxAge())
                 .build();
-        dictionaryService.addNewWord(newWord, responseCookie.toString());
-        return ResponseEntity.ok().body("success");
+
+        return ResponseEntity.ok(dictionaryService.addNewWord(newWord, responseCookie.toString()));
     }
 
     @Override
