@@ -1,15 +1,15 @@
 package com.tkd.iamservice.service;
 
-import com.tkd.iamservice.dto.AuthResponse;
-import com.tkd.iamservice.entity.IamUser;
+import com.tkd.iamservice.dto.AuthResponseDto;
+import com.tkd.iamservice.entity.IamUserEntity;
 import com.tkd.iamservice.entity.UserRole;
 import com.tkd.iamservice.repository.UserDao;
 import com.tkd.iamservice.utility.IamServiceUtility;
-import com.tkd.models.IamUserDetails;
+import com.tkd.models.IamUserData;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
 
-import com.tkd.models.UserAccount;
+import com.tkd.models.UserView;
 import com.tkd.security.JwtService;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
@@ -35,18 +35,18 @@ public class IamServiceImpl implements IamService {
     private final AuthenticationManager authenticationManager;
 
     @Override
-    public AuthResponse registerUser(RegistrationRequest regisReq) throws Exception {
+    public AuthResponseDto registerUser(RegistrationRequest regisReq) throws Exception {
         // build new user
-        IamUser newUser = IamUser
+        IamUserEntity newUser = IamUserEntity
                 .builder()
                 .email(regisReq.getEmail())
                 .username(regisReq.getUsername())
                 .password(passwordEncoder.encode(regisReq.getPassword()))
                 .role(UserRole.USER)
                 .build();
-        AuthResponse registerResponse = AuthResponse.builder().build();
+        AuthResponseDto registerResponse = AuthResponseDto.builder().build();
 
-        IamUser savedUser = userDao.save(newUser); // throws exception if got duplicates
+        IamUserEntity savedUser = userDao.save(newUser); // throws exception if got duplicates
         if(savedUser.getId() > 0) {
             String token = jwtService.generateToken(savedUser);
             String refreshToken = jwtService.generateRefreshToken(savedUser);
@@ -76,15 +76,15 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public AuthResponse loginUser(LoginRequest loginReq) throws Exception {
+    public AuthResponseDto loginUser(LoginRequest loginReq) throws Exception {
         // throws exception if bad credentials
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginReq.getLogin(), loginReq.getPassword()
         ));
 
         // get username and generate jwt token and refresh token
-        Optional<IamUser> retrievedUser = userDao.findByUsernameOrEmail(loginReq.getLogin(), loginReq.getLogin());
-        IamUser userDetails = retrievedUser.orElseThrow(() -> new UsernameNotFoundException(loginReq.getLogin() + " not found!"));
+        Optional<IamUserEntity> retrievedUser = userDao.findByUsernameOrEmail(loginReq.getLogin(), loginReq.getLogin());
+        IamUserEntity userDetails = retrievedUser.orElseThrow(() -> new UsernameNotFoundException(loginReq.getLogin() + " not found!"));
 
         String token = jwtService.generateToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
@@ -107,7 +107,7 @@ public class IamServiceImpl implements IamService {
                 .build();
 
         // set response body and return response
-        return AuthResponse.builder()
+        return AuthResponseDto.builder()
                 .message("Successfully logged in!")
                 .tokenCookie(tokenCookie)
                 .refreshCookie(refreshCookie)
@@ -115,7 +115,7 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public AuthResponse logoutUser() {
+    public AuthResponseDto logoutUser() {
         ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, "")
                 .httpOnly(true)
                 .sameSite("None")
@@ -132,7 +132,7 @@ public class IamServiceImpl implements IamService {
                 .maxAge(0)
                 .build();
 
-        return AuthResponse.builder()
+        return AuthResponseDto.builder()
                 .message("Successfully logged out!")
                 .tokenCookie(tokenCookie)
                 .refreshCookie(refreshCookie)
@@ -140,7 +140,7 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public AuthResponse refreshToken(Cookie cookie) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException {
+    public AuthResponseDto refreshToken(Cookie cookie) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException {
         // validate the refresh token
         // generate a new jwt token
         // return the jwt token, username, and message
@@ -150,10 +150,10 @@ public class IamServiceImpl implements IamService {
         // and endpoint doesn't need authentication to use
         currRefreshToken = cookie.getValue();
         currUsername = jwtService.extractUsername(currRefreshToken);
-        IamUser userDetails = userDao.findByUsername(currUsername)
+        IamUserEntity userDetails = userDao.findByUsername(currUsername)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("Refresh token: username %s not found!", currUsername)));
 
-        AuthResponse refreshResponse = AuthResponse.builder().build();
+        AuthResponseDto refreshResponse = AuthResponseDto.builder().build();
         String token;
         if (jwtService.isTokenValid(currRefreshToken, userDetails)) {
             token = jwtService.generateToken(userDetails);
@@ -184,30 +184,30 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public UserAccount getUserDetails(String token, boolean includeId) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException {
+    public UserView getUserDetails(String token, boolean includeId) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException {
         String username = jwtService.extractUsername(token);
 
-        IamUser userDetails = userDao.findByUsername(username)
+        IamUserEntity userDetails = userDao.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("Get user details: username %s not found!", username)));
 
-        UserAccount userAccount = new UserAccount();
-        userAccount.setUsername(userDetails.getUsername());
+        UserView userView = new UserView();
+        userView.setUsername(userDetails.getUsername());
         if (includeId)
-            userAccount.setId(BigDecimal.valueOf(userDetails.getId()));
+            userView.setId(BigDecimal.valueOf(userDetails.getId()));
 
-        return userAccount;
+        return userView;
     }
 
     @Override
-    public IamUserDetails getIamUserDetails(String loginId) throws UsernameNotFoundException {
-        IamUser userDetails = userDao.findByUsernameOrEmail(loginId, loginId)
+    public IamUserData getIamUserDetails(String loginId) throws UsernameNotFoundException {
+        IamUserEntity userDetails = userDao.findByUsernameOrEmail(loginId, loginId)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("Get user details: username %s not found!", loginId)));
 
-        IamUserDetails iamUserDetails = new IamUserDetails();
-        iamUserDetails.setUsername(userDetails.getUsername());
-        iamUserDetails.setPassword(userDetails.getPassword());
-        iamUserDetails.setRole(userDetails.getRole().toString());
+        IamUserData iamUserData = new IamUserData();
+        iamUserData.setUsername(userDetails.getUsername());
+        iamUserData.setPassword(userDetails.getPassword());
+        iamUserData.setRole(userDetails.getRole().toString());
 
-        return iamUserDetails;
+        return iamUserData;
     }
 }

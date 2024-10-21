@@ -1,9 +1,9 @@
 package com.tkd.dictionaryservice.service;
 
-import com.tkd.dictionaryservice.dto.UserAccount;
-import com.tkd.dictionaryservice.entity.DictionaryTranslation;
-import com.tkd.dictionaryservice.entity.DictionaryUsageExample;
-import com.tkd.dictionaryservice.entity.DictionaryWord;
+import com.tkd.dictionaryservice.dto.UserViewDto;
+import com.tkd.dictionaryservice.entity.TranslationEntity;
+import com.tkd.dictionaryservice.entity.UsageExampleEntity;
+import com.tkd.dictionaryservice.entity.WordEntity;
 import com.tkd.dictionaryservice.feign.IamFeignService;
 import com.tkd.dictionaryservice.repository.DictionaryExampleDao;
 import com.tkd.dictionaryservice.repository.DictionaryTranslationDao;
@@ -26,16 +26,16 @@ public class DictionaryServiceImpl implements DictionaryService {
 
     @Override
     public String addNewWord(Word word, String tokenCookieString) {
-        UserAccount userAccount = iamFeignService.getUserDetails(tokenCookieString);
+        UserViewDto userViewDto = iamFeignService.getUserDetails(tokenCookieString);
 
-        DictionaryWord newWord = DictionaryWord.builder()
+        WordEntity newWord = WordEntity.builder()
                 .word(word.getWord())
-                .userId(userAccount.getId().longValue())
+                .userId(userViewDto.getId().longValue())
                 .build();
-        DictionaryWord savedWord = dictionaryWordDao.save(newWord);
+        WordEntity savedWord = dictionaryWordDao.save(newWord);
 
         for(Translation translation : word.getTranslations()) {
-            DictionaryTranslation newTranslation = DictionaryTranslation.builder()
+            TranslationEntity newTranslation = TranslationEntity.builder()
                     .translation(translation.getTranslation())
                     .wordId(savedWord.getWordId())
                     .build();
@@ -43,7 +43,7 @@ public class DictionaryServiceImpl implements DictionaryService {
         }
 
         for(UsageExample usageExample : word.getUsageExamples()) {
-            DictionaryUsageExample newExample = DictionaryUsageExample.builder()
+            UsageExampleEntity newExample = UsageExampleEntity.builder()
                     .example(usageExample.getExample())
                     .exampleTranslation(usageExample.getExampleTranslation())
                     .wordId(savedWord.getWordId())

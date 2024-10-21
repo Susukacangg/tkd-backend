@@ -1,5 +1,6 @@
-package com.tkd.dictionaryservice.dto;
+package com.tkd.iamservice.entity;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,13 +14,25 @@ import java.util.List;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class IamUser implements UserDetails {
+@NoArgsConstructor
+@Entity
+@Table(name = "iam_user")
+public class IamUserEntity implements UserDetails {
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @Column(nullable = false, unique = true)
     private String username;
 
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
     private UserRole role;
 
     @Override

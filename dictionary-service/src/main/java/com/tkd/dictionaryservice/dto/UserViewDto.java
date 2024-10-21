@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 @Data
 @Builder
-public class UserAccount {
+public class UserViewDto {
     private BigDecimal id;
     private String username;
 }

@@ -11,14 +11,17 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "dictionary_translation")
-public class DictionaryTranslation {
+@Table(name = "usage_example")
+public class UsageExampleEntity {
     @Id
     @GeneratedValue
-    private Long translationId;
+    private Long usageExampleId;
 
     @Column(nullable = false)
-    private String translation;
+    private String example;
+
+    @Column(nullable = false)
+    private String exampleTranslation;
 
     @Column(nullable = false)
     private Long wordId;

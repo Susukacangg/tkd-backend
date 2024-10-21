@@ -6,7 +6,7 @@ import org.springframework.http.ResponseCookie;
 
 @Data
 @Builder
-public class AuthResponse {
+public class AuthResponseDto {
     private String message;
     private ResponseCookie tokenCookie;
     private ResponseCookie refreshCookie;

@@ -1,13 +1,13 @@
 package com.tkd.iamservice.controller;
 
 import com.tkd.apis.IamV1Api;
-import com.tkd.iamservice.dto.AuthResponse;
+import com.tkd.iamservice.dto.AuthResponseDto;
 import com.tkd.iamservice.service.IamService;
 import com.tkd.iamservice.utility.IamServiceUtility;
-import com.tkd.models.IamUserDetails;
+import com.tkd.models.IamUserData;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
-import com.tkd.models.UserAccount;
+import com.tkd.models.UserView;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class IamController implements IamV1Api {
 
     @Override
     public ResponseEntity<String> registerUser(RegistrationRequest body) {
-        AuthResponse registerResponse = AuthResponse.builder().build();
+        AuthResponseDto registerResponse = AuthResponseDto.builder().build();
 
         try {
             registerResponse = iamService.registerUser(body);
@@ -47,7 +47,7 @@ public class IamController implements IamV1Api {
 
     @Override
     public ResponseEntity<String> loginUser(LoginRequest body) {
-        AuthResponse loginResponse = AuthResponse.builder().build();
+        AuthResponseDto loginResponse = AuthResponseDto.builder().build();
         try {
             loginResponse = iamService.loginUser(body);
             return ResponseEntity.ok()
@@ -62,7 +62,7 @@ public class IamController implements IamV1Api {
 
     @Override
     public ResponseEntity<String> logoutUser() {
-        AuthResponse logoutResponse = iamService.logoutUser();
+        AuthResponseDto logoutResponse = iamService.logoutUser();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, logoutResponse.getTokenCookie().toString())
@@ -80,7 +80,7 @@ public class IamController implements IamV1Api {
 
         HttpServletRequest request = requestOptional.get();
         Cookie[] cookies = request.getCookies();
-        AuthResponse refreshResponse = AuthResponse.builder().build();
+        AuthResponseDto refreshResponse = AuthResponseDto.builder().build();
         refreshResponse.setMessage("Refresh token error");
 
         // NO COOKIES, should not be calling in the first place
@@ -124,7 +124,7 @@ public class IamController implements IamV1Api {
     }
 
     @Override
-    public ResponseEntity<UserAccount> getUserDetails(Boolean includeId) {
+    public ResponseEntity<UserView> getUserDetails(Boolean includeId) {
         Optional<HttpServletRequest> requestOptional = getRequest();
         log.info("get user details");
 
@@ -162,7 +162,7 @@ public class IamController implements IamV1Api {
     }
 
     @Override
-    public ResponseEntity<IamUserDetails> getIamUserDetails(String xInternalCall, String loginId) {
+    public ResponseEntity<IamUserData> getIamUserDetails(String xInternalCall, String loginId) {
         try {
             return ResponseEntity.ok(iamService.getIamUserDetails(loginId));
         } catch (UsernameNotFoundException e) {

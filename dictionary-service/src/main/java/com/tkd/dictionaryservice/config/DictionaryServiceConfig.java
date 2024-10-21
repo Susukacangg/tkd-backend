@@ -1,7 +1,7 @@
 package com.tkd.dictionaryservice.config;
 
-import com.tkd.dictionaryservice.dto.IamUserDetails;
-import com.tkd.dictionaryservice.dto.IamUser;
+import com.tkd.dictionaryservice.dto.IamUserDataDto;
+import com.tkd.dictionaryservice.dto.IamUserDto;
 import com.tkd.dictionaryservice.dto.UserRole;
 import com.tkd.dictionaryservice.feign.IamFeignService;
 import com.tkd.security.CustomUserDetailsService;
@@ -22,12 +22,12 @@ public class DictionaryServiceConfig {
     @Bean
     public CustomUserDetailsService customUserDetailsService() {
         return username -> {
-            IamUserDetails iamUserDetails = iamFeignService.getIamUserDetails(internalRequestSecret, username);
-            if (iamUserDetails != null) {
-                return IamUser.builder()
-                        .username(iamUserDetails.getUsername())
-                        .password(iamUserDetails.getPassword())
-                        .role(UserRole.valueOf(iamUserDetails.getRole()))
+            IamUserDataDto iamUserData = iamFeignService.getIamUserDetails(internalRequestSecret, username);
+            if (iamUserData != null) {
+                return IamUserDto.builder()
+                        .username(iamUserData.getUsername())
+                        .password(iamUserData.getPassword())
+                        .role(UserRole.valueOf(iamUserData.getRole()))
                         .build();
             }
 

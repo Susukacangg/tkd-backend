@@ -134,7 +134,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserAccount"
+                $ref: "#/components/schemas/UserView"
   /internal/user/details:
     get:
       tags:
@@ -158,7 +158,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/IamUserDetails"
+                $ref: "#/components/schemas/IamUserData"
 
 components:
   schemas:
@@ -178,14 +178,14 @@ components:
           type: string
         password:
           type: string
-    UserAccount:
+    UserView:
       type: object
       properties:
         id:
           type: number
         username:
           type: string
-    IamUserDetails:
+    IamUserData:
       type: object
       properties:
         username:
