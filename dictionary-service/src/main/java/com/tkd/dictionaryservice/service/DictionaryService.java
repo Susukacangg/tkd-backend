@@ -1,8 +1,13 @@
 package com.tkd.dictionaryservice.service;
 
 
-import com.tkd.models.Word;
+import com.tkd.models.DictionaryItem;
+import com.tkd.models.WordRequest;
+
+import java.math.BigDecimal;
 
 public interface DictionaryService {
-    String addNewWord(Word newWord, String tokenCookieString);
+    BigDecimal addNewWord(WordRequest newWord, String tokenCookieString);
+
+    DictionaryItem findWord(BigDecimal wordId);
 }

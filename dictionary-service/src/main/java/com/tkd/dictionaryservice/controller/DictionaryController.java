@@ -2,7 +2,8 @@ package com.tkd.dictionaryservice.controller;
 
 import com.tkd.apis.DictV1Api;
 import com.tkd.dictionaryservice.service.DictionaryService;
-import com.tkd.models.Word;
+import com.tkd.models.DictionaryItem;
+import com.tkd.models.WordRequest;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -22,7 +24,7 @@ public class DictionaryController implements DictV1Api {
     private final DictionaryService dictionaryService;
 
     @Override
-    public ResponseEntity<String> addToDictionary(Word newWord) {
+    public ResponseEntity<BigDecimal> addToDictionary(WordRequest newWord) {
         HttpServletRequest request = getRequest().orElseThrow(() -> new RuntimeException("request is null"));
 
         Cookie[] cookies = request.getCookies();
@@ -52,6 +54,20 @@ public class DictionaryController implements DictV1Api {
                 .build();
 
         return ResponseEntity.ok(dictionaryService.addNewWord(newWord, responseCookie.toString()));
+    }
+
+    @Override
+    public ResponseEntity<Object> getRandomWords() {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<DictionaryItem> findWord(BigDecimal wordId) {
+        DictionaryItem dictionaryItem = dictionaryService.findWord(wordId);
+        if (dictionaryItem == null)
+            return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok(dictionaryItem);
     }
 
     @Override

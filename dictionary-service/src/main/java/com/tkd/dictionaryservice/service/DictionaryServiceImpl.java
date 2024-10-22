@@ -8,12 +8,16 @@ import com.tkd.dictionaryservice.feign.IamFeignService;
 import com.tkd.dictionaryservice.repository.DictionaryExampleDao;
 import com.tkd.dictionaryservice.repository.DictionaryTranslationDao;
 import com.tkd.dictionaryservice.repository.DictionaryWordDao;
-import com.tkd.models.Translation;
-import com.tkd.models.UsageExample;
-import com.tkd.models.Word;
+import com.tkd.models.DictionaryItem;
+import com.tkd.models.TranslationRequest;
+import com.tkd.models.UsageExampleRequest;
+import com.tkd.models.WordRequest;
+import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 @Slf4j
 @Service
@@ -25,7 +29,7 @@ public class DictionaryServiceImpl implements DictionaryService {
     private final DictionaryExampleDao dictionaryExampleDao;
 
     @Override
-    public String addNewWord(Word word, String tokenCookieString) {
+    public BigDecimal addNewWord(WordRequest word, String tokenCookieString) {
         UserViewDto userViewDto = iamFeignService.getUserDetails(tokenCookieString);
 
         WordEntity newWord = WordEntity.builder()
@@ -34,7 +38,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                 .build();
         WordEntity savedWord = dictionaryWordDao.save(newWord);
 
-        for(Translation translation : word.getTranslations()) {
+        for(TranslationRequest translation : word.getTranslations()) {
             TranslationEntity newTranslation = TranslationEntity.builder()
                     .translation(translation.getTranslation())
                     .wordId(savedWord.getWordId())
@@ -42,7 +46,7 @@ public class DictionaryServiceImpl implements DictionaryService {
             dictionaryTranslationDao.save(newTranslation);
         }
 
-        for(UsageExample usageExample : word.getUsageExamples()) {
+        for(UsageExampleRequest usageExample : word.getUsageExamples()) {
             UsageExampleEntity newExample = UsageExampleEntity.builder()
                     .example(usageExample.getExample())
                     .exampleTranslation(usageExample.getExampleTranslation())
@@ -51,6 +55,21 @@ public class DictionaryServiceImpl implements DictionaryService {
             dictionaryExampleDao.save(newExample);
         }
 
-        return "Successfully added new word!";
+        return BigDecimal.valueOf(savedWord.getWordId());
+    }
+
+    @Override
+    public DictionaryItem findWord(BigDecimal wordId) {
+        DictionaryItem dictionaryItem = null;
+
+        Tuple queryResult = dictionaryWordDao.findWordByWordId(wordId.longValue()).orElse(null);
+        if (queryResult != null) {
+            dictionaryItem = new DictionaryItem();
+            dictionaryItem.setWord(queryResult.get("word").toString());
+            dictionaryItem.setTranslations(queryResult.get("translations").toString());
+            dictionaryItem.setUsageExamples(queryResult.get("usageExamples").toString());
+        }
+
+        return dictionaryItem;
     }
 }

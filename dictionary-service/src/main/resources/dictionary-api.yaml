@@ -21,18 +21,51 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Word"
+              $ref: "#/components/schemas/WordRequest"
       responses:
         "200":
           description: Contribution feedback
           content:
             application/json:
               schema:
-                type: string
+                type: number
+  /dict/random:
+    get:
+      tags:
+        - DictV1
+      operationId: getRandomWords
+      summary: Get a set of random words to display
+      responses:
+        "200":
+          description: The set of random words retrieved wrapped in a Page object
+          content:
+            application/json:
+              schema:
+                type: object
+  /dict/{wordId}:
+    get:
+      tags:
+        - DictV1
+      operationId: findWord
+      summary: Find word based on passed wordId
+      parameters:
+        - in: path
+          name: wordId
+          required: true
+          description: ID of word to be searched
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Word view model
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DictionaryItem'
 
 components:
   schemas:
-    Word:
+    WordRequest:
       type: object
       properties:
         word:
@@ -40,20 +73,29 @@ components:
         translations:
           type: array
           items:
-            $ref: '#/components/schemas/Translation'
+            $ref: '#/components/schemas/TranslationRequest'
         usageExamples:
           type: array
           items:
-            $ref: '#/components/schemas/UsageExample'
-    Translation:
+            $ref: '#/components/schemas/UsageExampleRequest'
+    TranslationRequest:
       type: object
       properties:
         translation:
           type: string
-    UsageExample:
+    UsageExampleRequest:
       type: object
       properties:
         example:
           type: string
         exampleTranslation:
+          type: string
+    DictionaryItem:
+      type: object
+      properties:
+        word:
+          type: string
+        translations:
+          type: string
+        usageExamples:
           type: string
