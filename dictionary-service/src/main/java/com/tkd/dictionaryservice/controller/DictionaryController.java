@@ -7,6 +7,7 @@ import com.tkd.models.WordRequest;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -57,8 +58,12 @@ public class DictionaryController implements DictV1Api {
     }
 
     @Override
-    public ResponseEntity<Object> getRandomWords() {
-        return null;
+    public ResponseEntity<Object> getRandomWords(Integer pageNumber) {
+        Page<DictionaryItem> items = dictionaryService.getRandomWords(pageNumber);
+        if(items == null)
+            return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok(items);
     }
 
     @Override

@@ -15,9 +15,14 @@ import com.tkd.models.WordRequest;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -65,11 +70,41 @@ public class DictionaryServiceImpl implements DictionaryService {
         Tuple queryResult = dictionaryWordDao.findWordByWordId(wordId.longValue()).orElse(null);
         if (queryResult != null) {
             dictionaryItem = new DictionaryItem();
+            dictionaryItem.setWordId(BigDecimal.valueOf((Long) queryResult.get("wordId")));
             dictionaryItem.setWord(queryResult.get("word").toString());
             dictionaryItem.setTranslations(queryResult.get("translations").toString());
             dictionaryItem.setUsageExamples(queryResult.get("usageExamples").toString());
         }
 
         return dictionaryItem;
+    }
+
+    @Override
+    public Page<DictionaryItem> getRandomWords(int pageNumber) {
+        List<Tuple> queryResults = dictionaryWordDao.getRandomWords();
+
+        if(!queryResults.isEmpty()) {
+            List<DictionaryItem> dictionaryItems = queryResults.stream().map(
+                    tuple -> {
+                        DictionaryItem dictionaryItem = new DictionaryItem();
+                        dictionaryItem.setWordId(BigDecimal.valueOf((Long) tuple.get("wordId")));
+                        dictionaryItem.setWord(tuple.get("word").toString());
+                        dictionaryItem.setTranslations(tuple.get("translations").toString());
+                        dictionaryItem.setUsageExamples(tuple.get("usageExamples").toString());
+                        return dictionaryItem;
+                    }
+            ).toList();
+
+            int pageSize = 10;
+            Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
+
+            int pagedListStart = (int) pageable.getOffset();
+            int pagedListEnd = Math.min((pagedListStart + pageSize), dictionaryItems.size());
+
+            dictionaryItems = dictionaryItems.subList(pagedListStart, pagedListEnd);
+            return new PageImpl<>(dictionaryItems, pageable, queryResults.size());
+        }
+
+        return null;
     }
 }
