@@ -35,20 +35,15 @@ paths:
         - DictV1
       operationId: getRandomWords
       summary: Get a set of random words to display
-      parameters:
-        - in: query
-          name: pageNumber
-          required: true
-          description: current page of data
-          schema:
-            type: integer
       responses:
         "200":
           description: The set of random words retrieved wrapped in a Page object
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/DictionaryItem'
   /dict/{wordId}:
     get:
       tags:

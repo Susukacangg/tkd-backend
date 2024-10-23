@@ -15,13 +15,10 @@ import com.tkd.models.WordRequest;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -80,11 +77,12 @@ public class DictionaryServiceImpl implements DictionaryService {
     }
 
     @Override
-    public Page<DictionaryItem> getRandomWords(int pageNumber) {
+    public List<DictionaryItem> getRandomWords() {
         List<Tuple> queryResults = dictionaryWordDao.getRandomWords();
+        List<DictionaryItem> dictionaryItems = new ArrayList<>();
 
         if(!queryResults.isEmpty()) {
-            List<DictionaryItem> dictionaryItems = queryResults.stream().map(
+            dictionaryItems = queryResults.stream().map(
                     tuple -> {
                         DictionaryItem dictionaryItem = new DictionaryItem();
                         dictionaryItem.setWordId(BigDecimal.valueOf((Long) tuple.get("wordId")));
@@ -94,17 +92,8 @@ public class DictionaryServiceImpl implements DictionaryService {
                         return dictionaryItem;
                     }
             ).toList();
-
-            int pageSize = 10;
-            Pageable pageable = PageRequest.of(pageNumber - 1, pageSize);
-
-            int pagedListStart = (int) pageable.getOffset();
-            int pagedListEnd = Math.min((pagedListStart + pageSize), dictionaryItems.size());
-
-            dictionaryItems = dictionaryItems.subList(pagedListStart, pagedListEnd);
-            return new PageImpl<>(dictionaryItems, pageable, queryResults.size());
         }
 
-        return null;
+        return dictionaryItems;
     }
 }
