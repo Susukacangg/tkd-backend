@@ -67,8 +67,8 @@ public class DictionaryController implements DictV1Api {
     }
 
     @Override
-    public ResponseEntity<DictionaryItem> findWord(BigDecimal wordId) {
-        DictionaryItem dictionaryItem = dictionaryService.findWord(wordId);
+    public ResponseEntity<DictionaryItem> getWord(BigDecimal wordId) {
+        DictionaryItem dictionaryItem = dictionaryService.getWord(wordId);
         if (dictionaryItem == null)
             return ResponseEntity.notFound().build();
 

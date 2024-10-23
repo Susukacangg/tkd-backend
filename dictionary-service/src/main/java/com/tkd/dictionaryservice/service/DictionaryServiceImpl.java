@@ -64,7 +64,7 @@ public class DictionaryServiceImpl implements DictionaryService {
     }
 
     @Override
-    public DictionaryItem findWord(BigDecimal wordId) {
+    public DictionaryItem getWord(BigDecimal wordId) {
         DictionaryItem dictionaryItem = null;
 
         Tuple queryResult = dictionaryWordDao.findWordByWordId(wordId.longValue()).orElse(null);

@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 public interface DictionaryService {
     BigDecimal addNewWord(WordRequest newWord, String tokenCookieString);
 
-    DictionaryItem findWord(BigDecimal wordId);
+    DictionaryItem getWord(BigDecimal wordId);
 
     Page<DictionaryItem> getRandomWords(int pageNumber);
 }

@@ -53,7 +53,7 @@ paths:
     get:
       tags:
         - DictV1
-      operationId: findWord
+      operationId: getWord
       summary: Find word based on passed wordId
       parameters:
         - in: path
