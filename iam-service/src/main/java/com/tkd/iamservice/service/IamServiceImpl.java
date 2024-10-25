@@ -95,7 +95,7 @@ public class IamServiceImpl implements IamService {
                 .sameSite("None")
                 .secure(true)
                 .path("/")
-                .maxAge(60 * 60 * 24 * 7)
+                .maxAge(60 * 15)
                 .build();
 
         ResponseCookie refreshCookie = ResponseCookie.from(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY, refreshToken)
