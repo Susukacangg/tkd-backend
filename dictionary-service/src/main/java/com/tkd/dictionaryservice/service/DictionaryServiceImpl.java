@@ -131,13 +131,10 @@ public class DictionaryServiceImpl implements DictionaryService {
 
     @Override
     public List<String> suggestWord(String searchStr) {
-        List<Tuple> queryResults = dictionaryWordDao.findWordContaining(searchStr);
+        List<String> queryResults = dictionaryWordDao.findWordContaining(searchStr);
 
-        if(!queryResults.isEmpty()) {
-            return queryResults.stream().map(
-                    tuple -> tuple.get("word").toString()
-            ).toList();
-        }
+        if(!queryResults.isEmpty())
+            return queryResults;
 
         return null;
     }

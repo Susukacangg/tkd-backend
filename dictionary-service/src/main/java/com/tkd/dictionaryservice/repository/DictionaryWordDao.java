@@ -87,5 +87,5 @@ public interface DictionaryWordDao extends JpaRepository<WordEntity, Long> {
             LIMIT
                 10;
             """)
-    List<Tuple> findWordContaining(@Param("wordStr") String wordStr);
+    List<String> findWordContaining(@Param("wordStr") String wordStr);
 }
