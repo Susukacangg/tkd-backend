@@ -59,11 +59,59 @@ paths:
             type: number
       responses:
         "200":
-          description: Word view model
+          description: Dictionary item
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DictionaryItem'
+  /dict/search:
+    get:
+      tags:
+        - DictV1
+      operationId: findWord
+      summary: Find word based on search string
+      parameters:
+        - in: query
+          name: word
+          required: true
+          description: Word string to be searched
+          schema:
+            type: string
+        - in: query
+          name: pageNum
+          required: true
+          description: Page of list of words
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Dictionary items paged
+          content:
+            application/json:
+              schema:
+                type: object
+  /dict/suggest:
+    get:
+      tags:
+        - DictV1
+      operationId: suggestWord
+      summary: Get words containing search string
+      parameters:
+        - in: query
+          name: searchStr
+          required: true
+          description: String to match words in database
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of words
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
 
 components:
   schemas:

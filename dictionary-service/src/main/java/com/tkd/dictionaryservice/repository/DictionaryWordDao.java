@@ -28,7 +28,7 @@ public interface DictionaryWordDao extends JpaRepository<WordEntity, Long> {
                 usage_example u ON w.word_id = u.word_id
             WHERE w.word_id = :wordId
             GROUP BY
-                w.word_id, w.word, w.user_id;
+                wordId, w.word;
             """)
     Optional<Tuple> findWordByWordId(@Param("wordId") Long wordId);
 
@@ -46,9 +46,46 @@ public interface DictionaryWordDao extends JpaRepository<WordEntity, Long> {
                     LEFT JOIN
                 usage_example u ON w.word_id = u.word_id
             GROUP BY
-                w.word_id, w.word, w.user_id
+                wordId, w.word
             ORDER BY RANDOM()
             LIMIT 20;
             """)
     List<Tuple> getRandomWords();
+
+    @Query(nativeQuery = true,
+            value = """
+            SELECT
+                w.word_id AS wordId,
+                w.word,
+                STRING_AGG(DISTINCT t.translation, ';') AS translations,
+                STRING_AGG(DISTINCT u.example || '|' || u.example_translation, ';') AS usageexamples
+            FROM
+                word w
+                    LEFT JOIN
+                translation t ON w.word_id = t.word_id
+                    LEFT JOIN
+                usage_example u ON w.word_id = u.word_id
+            WHERE
+                w.word = :wordStr
+            GROUP BY
+                wordId, w.word;
+            """)
+    List<Tuple> findWord(@Param("wordStr") String wordStr);
+
+    @Query(nativeQuery = true,
+            value = """
+            SELECT
+                word
+            FROM
+                word
+            WHERE
+                word LIKE '%' || :wordStr || '%'
+            GROUP BY
+                word
+            ORDER BY
+                word
+            LIMIT
+                10;
+            """)
+    List<Tuple> findWordContaining(@Param("wordStr") String wordStr);
 }

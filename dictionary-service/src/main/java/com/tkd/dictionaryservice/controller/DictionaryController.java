@@ -76,6 +76,16 @@ public class DictionaryController implements DictV1Api {
     }
 
     @Override
+    public ResponseEntity<Object> findWord(String word, Integer pageNum) {
+        return ResponseEntity.ok(dictionaryService.findWord(word, pageNum));
+    }
+
+    @Override
+    public ResponseEntity<List<String>> suggestWord(String searchStr) {
+        return ResponseEntity.ok(dictionaryService.suggestWord(searchStr));
+    }
+
+    @Override
     public Optional<HttpServletRequest> getRequest() {
         return Optional.of(
                 ((ServletRequestAttributes)
