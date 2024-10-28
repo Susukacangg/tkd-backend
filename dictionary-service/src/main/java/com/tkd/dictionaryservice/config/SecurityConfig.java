@@ -21,7 +21,8 @@ public class SecurityConfig {
     private final AuthenticationProvider authProvider;
 
     private final String[] URL_BLACKLIST = {
-            "/dict/add"
+            "/dict/add",
+            "/dict/get-users-words"
     };
 
     @Bean

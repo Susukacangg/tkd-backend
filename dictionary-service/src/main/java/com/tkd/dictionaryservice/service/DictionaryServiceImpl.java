@@ -12,6 +12,7 @@ import com.tkd.models.DictionaryItem;
 import com.tkd.models.TranslationRequest;
 import com.tkd.models.UsageExampleRequest;
 import com.tkd.models.WordRequest;
+import feign.FeignException;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,8 @@ public class DictionaryServiceImpl implements DictionaryService {
     private final DictionaryWordDao dictionaryWordDao;
     private final DictionaryTranslationDao dictionaryTranslationDao;
     private final DictionaryExampleDao dictionaryExampleDao;
+
+    private static final int pageSize = 10;
 
     @Override
     public BigDecimal addNewWord(WordRequest word, String tokenCookieString) {
@@ -103,7 +106,6 @@ public class DictionaryServiceImpl implements DictionaryService {
 
     @Override
     public Page<DictionaryItem> findWord(String word, int pageNum) {
-        final int pageSize = 10;
         List<Tuple> queryResults = dictionaryWordDao.findWord(word);
 
         if(!queryResults.isEmpty()) {
@@ -136,6 +138,32 @@ public class DictionaryServiceImpl implements DictionaryService {
         if(!queryResults.isEmpty())
             return queryResults;
 
+        return null;
+    }
+
+    @Override
+    public Page<DictionaryItem> getAllUserWords(String tokenCookieString, int pageNum) throws FeignException.Forbidden {
+        UserViewDto userViewDto = iamFeignService.getUserDetails(tokenCookieString);
+
+        List<Tuple> queryResults = dictionaryWordDao.getAllWordsForUser(userViewDto.getId().longValue());
+        List<DictionaryItem> dictionaryItems;
+        if(!queryResults.isEmpty()) {
+            dictionaryItems = queryResults.stream().map(item -> {
+                DictionaryItem dictionaryItem = new DictionaryItem();
+                dictionaryItem.setWordId(BigDecimal.valueOf((Long) item.get("wordId")));
+                dictionaryItem.setWord(item.get("word").toString());
+                dictionaryItem.setTranslations(item.get("translations").toString());
+                dictionaryItem.setUsageExamples(item.get("usageExamples").toString());
+                return dictionaryItem;
+            }).toList();
+
+            Pageable pageable = PageRequest.of(pageNum - 1, 10);
+            int sublistStart = (int) pageable.getOffset();
+            int subListEnd = Math.min((sublistStart + pageSize), dictionaryItems.size());
+            List<DictionaryItem> pagedDictionaryItems = dictionaryItems.subList(sublistStart, subListEnd);
+
+            return new PageImpl<>(pagedDictionaryItems, pageable, dictionaryItems.size());
+        }
         return null;
     }
 }

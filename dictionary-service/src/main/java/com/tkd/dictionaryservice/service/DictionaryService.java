@@ -3,6 +3,7 @@ package com.tkd.dictionaryservice.service;
 
 import com.tkd.models.DictionaryItem;
 import com.tkd.models.WordRequest;
+import feign.FeignException;
 import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
@@ -18,4 +19,6 @@ public interface DictionaryService {
     Page<DictionaryItem> findWord(String word, int pageNum);
 
     List<String> suggestWord(String searchStr);
+
+    Page<DictionaryItem> getAllUserWords(String tokenCookieString, int pageNum) throws FeignException.Forbidden;
 }

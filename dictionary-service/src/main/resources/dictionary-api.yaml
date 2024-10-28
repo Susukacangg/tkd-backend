@@ -112,6 +112,26 @@ paths:
                 type: array
                 items:
                   type: string
+  /dict/get-users-words:
+    get:
+      tags:
+        - DictV1
+      operationId: getAllUserWords
+      summary: Get the words that the user has contributed
+      parameters:
+        - in: query
+          name: pageNum
+          required: true
+          description: Page number of list of contributed words of user
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Page of list of words
+          content:
+            application/json:
+              schema:
+                type: object
 
 components:
   schemas:

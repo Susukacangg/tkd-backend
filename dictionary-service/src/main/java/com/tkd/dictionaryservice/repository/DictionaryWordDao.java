@@ -88,4 +88,26 @@ public interface DictionaryWordDao extends JpaRepository<WordEntity, Long> {
                 10;
             """)
     List<String> findWordContaining(@Param("wordStr") String wordStr);
+
+    @Query(nativeQuery = true,
+            value = """
+            SELECT
+                w.word_id AS wordId,
+                w.word,
+                STRING_AGG(DISTINCT t.translation, ';') AS translations,
+                STRING_AGG(DISTINCT u.example || '|' || u.example_translation, ';') AS usageexamples
+            FROM
+                word w
+                    LEFT JOIN
+                translation t ON w.word_id = t.word_id
+                    LEFT JOIN
+                usage_example u ON w.word_id = u.word_id
+            WHERE
+                w.user_id = :userId
+            GROUP BY
+                wordId, w.word
+            ORDER BY
+                w.word;
+            """)
+    List<Tuple> getAllWordsForUser(@Param("userId") Long userId);
 }

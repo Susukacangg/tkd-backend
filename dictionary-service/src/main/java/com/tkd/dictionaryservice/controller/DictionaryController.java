@@ -2,11 +2,14 @@ package com.tkd.dictionaryservice.controller;
 
 import com.tkd.apis.DictV1Api;
 import com.tkd.dictionaryservice.service.DictionaryService;
+import com.tkd.dictionaryservice.utility.DictionaryServiceUtility;
 import com.tkd.models.DictionaryItem;
 import com.tkd.models.WordRequest;
+import feign.FeignException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -31,12 +34,12 @@ public class DictionaryController implements DictV1Api {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
             log.error("No cookies passed adding new word");
-            return ResponseEntity.internalServerError().body(null);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         Cookie tokenCookie = null;
         for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("token"))
+            if (cookie.getName().equals(DictionaryServiceUtility.TOKEN_COOKIE_KEY))
                 tokenCookie = cookie;
         }
 
@@ -83,6 +86,44 @@ public class DictionaryController implements DictV1Api {
     @Override
     public ResponseEntity<List<String>> suggestWord(String searchStr) {
         return ResponseEntity.ok(dictionaryService.suggestWord(searchStr));
+    }
+
+    @Override
+    public ResponseEntity<Object> getAllUserWords(Integer pageNum) {
+        HttpServletRequest request = getRequest().orElseThrow(() -> new RuntimeException("request is null"));
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            log.error("No cookies passed adding new word");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Cookie tokenCookie = null;
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(DictionaryServiceUtility.TOKEN_COOKIE_KEY))
+                tokenCookie = cookie;
+        }
+
+        if (tokenCookie == null) {
+            log.error("No token cookie passed adding new word");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        ResponseCookie responseCookie = ResponseCookie.from(tokenCookie.getName(), tokenCookie.getValue())
+                .httpOnly(tokenCookie.isHttpOnly())
+                .sameSite("None")
+                .secure(tokenCookie.getSecure())
+                .path(tokenCookie.getPath())
+                .maxAge(tokenCookie.getMaxAge())
+                .build();
+
+        try {
+            Page<DictionaryItem> dictionaryItems = dictionaryService.getAllUserWords(responseCookie.toString(), pageNum);
+            return ResponseEntity.ok(dictionaryItems);
+        } catch (FeignException.Forbidden error) {
+            log.info(error.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
 
     @Override
