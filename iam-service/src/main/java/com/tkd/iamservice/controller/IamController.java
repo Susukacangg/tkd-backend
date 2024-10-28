@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -84,9 +83,10 @@ public class IamController implements IamV1Api {
         refreshResponse.setMessage("Refresh token error");
 
         // NO COOKIES, should not be calling in the first place
+        // check for cookies because endpoint doesn't need authorization
         if(cookies == null) {
             log.error("No cookie passed");
-            return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(refreshResponse.getMessage());
         }
 
         // find for the refresh token cookie
@@ -98,7 +98,7 @@ public class IamController implements IamV1Api {
         // NO REFRESH TOKEN
         if(refreshTokenCookie == null) {
             log.error("No refresh token cookie");
-            return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(refreshResponse.getMessage());
         }
 
         // refresh the access token
@@ -109,7 +109,7 @@ public class IamController implements IamV1Api {
                     .body(refreshResponse.getMessage());
         } catch (Exception e) {
             log.error(e.getMessage());
-            return ResponseEntity.internalServerError().body(refreshResponse.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(refreshResponse.getMessage());
         }
     }
 
@@ -133,31 +133,21 @@ public class IamController implements IamV1Api {
 
         HttpServletRequest request = requestOptional.get();
         Cookie[] cookies = request.getCookies();
-
-        if(cookies == null) {
-            log.error("No cookies passed getting user details");
-            return ResponseEntity.internalServerError().body(null);
-        }
-
         Cookie tokenCookie = null;
-        for(Cookie cookie : cookies) {
+        for(Cookie cookie : cookies)
             if(cookie.getName().equals(IamServiceUtility.TOKEN_COOKIE_KEY))
                 tokenCookie = cookie;
-        }
 
         if(tokenCookie == null) {
-            log.error("No token cookie passed getting user details");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            log.error("No token cookie passed");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
         try {
             return ResponseEntity.ok(iamService.getUserDetails(tokenCookie.getValue(), includeId));
-        } catch (AccountExpiredException | IllegalArgumentException e) {
+        } catch (Exception e) {
             log.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-        } catch (UsernameNotFoundException e) {
-            log.error(e.getMessage());
-            return ResponseEntity.internalServerError().body(null);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }
 

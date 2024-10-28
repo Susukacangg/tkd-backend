@@ -22,7 +22,7 @@ public interface IamService {
 
     Boolean checkEmailAvailable(String email);
 
-    UserView getUserDetails(String username, boolean includeId) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException;
+    UserView getUserDetails(String token, boolean includeId) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException;
 
     IamUserData getIamUserDetails(String loginId) throws UsernameNotFoundException;
 }

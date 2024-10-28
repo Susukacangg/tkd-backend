@@ -32,23 +32,16 @@ public class DictionaryController implements DictV1Api {
         HttpServletRequest request = getRequest().orElseThrow(() -> new RuntimeException("request is null"));
 
         Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            log.error("No cookies passed adding new word");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
         Cookie tokenCookie = null;
-        for (Cookie cookie : cookies) {
+        for (Cookie cookie : cookies)
             if (cookie.getName().equals(DictionaryServiceUtility.TOKEN_COOKIE_KEY))
                 tokenCookie = cookie;
-        }
 
         if (tokenCookie == null) {
             log.error("No token cookie passed adding new word");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        log.info(newWord.toString());
         ResponseCookie responseCookie = ResponseCookie.from(tokenCookie.getName(), tokenCookie.getValue())
                 .httpOnly(tokenCookie.isHttpOnly())
                 .sameSite("None")
@@ -93,20 +86,14 @@ public class DictionaryController implements DictV1Api {
         HttpServletRequest request = getRequest().orElseThrow(() -> new RuntimeException("request is null"));
 
         Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            log.error("No cookies passed adding new word");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
         Cookie tokenCookie = null;
-        for (Cookie cookie : cookies) {
+        for (Cookie cookie : cookies)
             if (cookie.getName().equals(DictionaryServiceUtility.TOKEN_COOKIE_KEY))
                 tokenCookie = cookie;
-        }
 
         if (tokenCookie == null) {
             log.error("No token cookie passed adding new word");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         ResponseCookie responseCookie = ResponseCookie.from(tokenCookie.getName(), tokenCookie.getValue())
