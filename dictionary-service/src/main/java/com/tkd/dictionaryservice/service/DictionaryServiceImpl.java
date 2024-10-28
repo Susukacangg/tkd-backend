@@ -35,7 +35,7 @@ public class DictionaryServiceImpl implements DictionaryService {
     private final DictionaryTranslationDao dictionaryTranslationDao;
     private final DictionaryExampleDao dictionaryExampleDao;
 
-    private static final int pageSize = 10;
+    private static final int PAGE_SIZE = 10;
 
     @Override
     public BigDecimal addNewWord(WordRequest word, String tokenCookieString) {
@@ -120,9 +120,9 @@ public class DictionaryServiceImpl implements DictionaryService {
                     }
             ).toList();
 
-            Pageable pageable = PageRequest.of(pageNum - 1, pageSize);
+            Pageable pageable = PageRequest.of(pageNum - 1, PAGE_SIZE);
             int sublistStart = (int) pageable.getOffset();
-            int subListEnd = Math.min((sublistStart + pageSize), dictionaryItems.size());
+            int subListEnd = Math.min((sublistStart + PAGE_SIZE), dictionaryItems.size());
             List<DictionaryItem> pagedDictionaryItems = dictionaryItems.subList(sublistStart, subListEnd);
 
             return new PageImpl<>(pagedDictionaryItems, pageable, dictionaryItems.size());
@@ -157,9 +157,9 @@ public class DictionaryServiceImpl implements DictionaryService {
                 return dictionaryItem;
             }).toList();
 
-            Pageable pageable = PageRequest.of(pageNum - 1, 10);
+            Pageable pageable = PageRequest.of(pageNum - 1, PAGE_SIZE);
             int sublistStart = (int) pageable.getOffset();
-            int subListEnd = Math.min((sublistStart + pageSize), dictionaryItems.size());
+            int subListEnd = Math.min((sublistStart + PAGE_SIZE), dictionaryItems.size());
             List<DictionaryItem> pagedDictionaryItems = dictionaryItems.subList(sublistStart, subListEnd);
 
             return new PageImpl<>(pagedDictionaryItems, pageable, dictionaryItems.size());
