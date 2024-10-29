@@ -74,6 +74,7 @@ public class DictionaryServiceImpl implements DictionaryService {
         Tuple queryResult = dictionaryWordDao.findWordByWordId(wordId.longValue()).orElse(null);
         if (queryResult != null) {
             dictionaryItem = new DictionaryItem();
+            dictionaryItem.setUsername(queryResult.get("username").toString());
             dictionaryItem.setWordId(BigDecimal.valueOf((Long) queryResult.get("wordId")));
             dictionaryItem.setWord(queryResult.get("word").toString());
             dictionaryItem.setTranslations(queryResult.get("translations").toString());
@@ -92,6 +93,7 @@ public class DictionaryServiceImpl implements DictionaryService {
             dictionaryItems = queryResults.stream().map(
                     tuple -> {
                         DictionaryItem dictionaryItem = new DictionaryItem();
+                        dictionaryItem.setUsername(tuple.get("username").toString());
                         dictionaryItem.setWordId(BigDecimal.valueOf((Long) tuple.get("wordId")));
                         dictionaryItem.setWord(tuple.get("word").toString());
                         dictionaryItem.setTranslations(tuple.get("translations").toString());
@@ -112,6 +114,7 @@ public class DictionaryServiceImpl implements DictionaryService {
             List<DictionaryItem> dictionaryItems = queryResults.stream().map(
                     tuple -> {
                         DictionaryItem dictionaryItem = new DictionaryItem();
+                        dictionaryItem.setUsername(tuple.get("username").toString());
                         dictionaryItem.setWordId(BigDecimal.valueOf((Long) tuple.get("wordId")));
                         dictionaryItem.setWord(tuple.get("word").toString());
                         dictionaryItem.setTranslations(tuple.get("translations").toString());

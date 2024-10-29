@@ -16,6 +16,7 @@ public interface DictionaryWordDao extends JpaRepository<WordEntity, Long> {
     @Query(nativeQuery = true,
             value = """
             SELECT
+                iam.username,
                 w.word_id AS wordId,
                 w.word,
                 STRING_AGG(DISTINCT t.translation, ';') AS translations,
@@ -26,15 +27,18 @@ public interface DictionaryWordDao extends JpaRepository<WordEntity, Long> {
                 translation t ON w.word_id = t.word_id
                     LEFT JOIN
                 usage_example u ON w.word_id = u.word_id
+                    LEFT JOIN
+                iam_user iam ON iam.id = w.user_id
             WHERE w.word_id = :wordId
             GROUP BY
-                wordId, w.word;
+                wordId, w.word, iam.username;
             """)
     Optional<Tuple> findWordByWordId(@Param("wordId") Long wordId);
 
     @Query(nativeQuery = true,
             value = """
             SELECT
+                iam.username,
                 w.word_id AS wordId,
                 w.word,
                 STRING_AGG(DISTINCT t.translation, ';') AS translations,
@@ -45,8 +49,10 @@ public interface DictionaryWordDao extends JpaRepository<WordEntity, Long> {
                 translation t ON w.word_id = t.word_id
                     LEFT JOIN
                 usage_example u ON w.word_id = u.word_id
+                    LEFT JOIN
+                iam_user iam ON iam.id = w.user_id
             GROUP BY
-                wordId, w.word
+                wordId, w.word, iam.username
             ORDER BY RANDOM()
             LIMIT 20;
             """)
@@ -55,6 +61,7 @@ public interface DictionaryWordDao extends JpaRepository<WordEntity, Long> {
     @Query(nativeQuery = true,
             value = """
             SELECT
+                iam.username,
                 w.word_id AS wordId,
                 w.word,
                 STRING_AGG(DISTINCT t.translation, ';') AS translations,
@@ -65,10 +72,12 @@ public interface DictionaryWordDao extends JpaRepository<WordEntity, Long> {
                 translation t ON w.word_id = t.word_id
                     LEFT JOIN
                 usage_example u ON w.word_id = u.word_id
+                    LEFT JOIN
+                iam_user iam ON iam.id = w.user_id
             WHERE
                 w.word = :wordStr
             GROUP BY
-                wordId, w.word;
+                wordId, w.word, iam.username;
             """)
     List<Tuple> findWord(@Param("wordStr") String wordStr);
 

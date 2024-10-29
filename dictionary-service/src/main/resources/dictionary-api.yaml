@@ -163,6 +163,8 @@ components:
     DictionaryItem:
       type: object
       properties:
+        username:
+          type: string
         wordId:
           type: number
         word:
