@@ -43,7 +43,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/DictionaryItem'
+                  $ref: '#/components/schemas/WordModel'
   /dict/{wordId}:
     get:
       tags:
@@ -63,7 +63,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DictionaryItem'
+                $ref: '#/components/schemas/WordModel'
     put:
       tags:
         - DictV1
@@ -164,6 +164,8 @@ components:
     WordModel:
       type: object
       properties:
+        username:
+          type: string
         wordId:
           type: number
         word:
@@ -191,17 +193,4 @@ components:
         example:
           type: string
         exampleTranslation:
-          type: string
-    DictionaryItem:
-      type: object
-      properties:
-        username:
-          type: string
-        wordId:
-          type: number
-        word:
-          type: string
-        translations:
-          type: string
-        usageExamples:
           type: string

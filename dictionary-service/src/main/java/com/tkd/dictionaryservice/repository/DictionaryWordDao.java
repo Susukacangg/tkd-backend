@@ -17,69 +17,31 @@ public interface DictionaryWordDao extends JpaRepository<WordEntity, Long> {
             value = """
             SELECT
                 iam.username,
-                w.word_id AS wordId,
+                w.word_id as wordid,
                 w.word,
-                STRING_AGG(DISTINCT t.translation, ';') AS translations,
-                STRING_AGG(DISTINCT u.example || '|' || u.example_translation, ';') AS usageexamples
+                STRING_AGG(DISTINCT t.translation_id || '~' || t.translation, ';') AS translations,
+                STRING_AGG(DISTINCT u.usage_example_id || '~' || u.example || '|' || u.example_translation, ';') AS usageexamples
             FROM
                 word w
-                    LEFT JOIN
-                translation t ON w.word_id = t.word_id
-                    LEFT JOIN
-                usage_example u ON w.word_id = u.word_id
-                    LEFT JOIN
-                iam_user iam ON iam.id = w.user_id
-            WHERE w.word_id = :wordId
-            GROUP BY
-                wordId, w.word, iam.username;
-            """)
-    Optional<Tuple> findWordByWordId(@Param("wordId") Long wordId);
-
-    @Query(nativeQuery = true,
-            value = """
-            SELECT
-                iam.username,
-                w.word_id AS wordId,
-                w.word,
-                STRING_AGG(DISTINCT t.translation, ';') AS translations,
-                STRING_AGG(DISTINCT u.example || '|' || u.example_translation, ';') AS usageexamples
-            FROM
-                word w
-                    LEFT JOIN
-                translation t ON w.word_id = t.word_id
-                    LEFT JOIN
-                usage_example u ON w.word_id = u.word_id
-                    LEFT JOIN
-                iam_user iam ON iam.id = w.user_id
+            LEFT JOIN translation t ON w.word_id = t.word_id
+            LEFT JOIN usage_example u ON w.word_id = u.word_id
+            LEFT JOIN iam_user iam ON w.user_id = iam.id
+            WHERE
+                w.word_id = COALESCE(:wordId, w.word_id) AND
+                w.word = COALESCE(:wordStr, w.word) AND
+                w.user_id = COALESCE(:userId, w.user_id)
             GROUP BY
                 wordId, w.word, iam.username
-            ORDER BY RANDOM()
-            LIMIT 20;
+            ORDER BY
+                 CASE WHEN :isRandom THEN RANDOM() END,
+                 w.word
+            LIMIT :limit;
             """)
-    List<Tuple> getRandomWords();
-
-    @Query(nativeQuery = true,
-            value = """
-            SELECT
-                iam.username,
-                w.word_id AS wordId,
-                w.word,
-                STRING_AGG(DISTINCT t.translation, ';') AS translations,
-                STRING_AGG(DISTINCT u.example || '|' || u.example_translation, ';') AS usageexamples
-            FROM
-                word w
-                    LEFT JOIN
-                translation t ON w.word_id = t.word_id
-                    LEFT JOIN
-                usage_example u ON w.word_id = u.word_id
-                    LEFT JOIN
-                iam_user iam ON iam.id = w.user_id
-            WHERE
-                w.word = :wordStr
-            GROUP BY
-                wordId, w.word, iam.username;
-            """)
-    List<Tuple> findWord(@Param("wordStr") String wordStr);
+    List<Tuple> findWord(@Param("wordId") Long wordId,
+                         @Param("wordStr") String wordStr,
+                         @Param("userId") Long userId,
+                         @Param("isRandom") boolean isRandom,
+                         @Param("limit") int limit);
 
     @Query(nativeQuery = true,
             value = """
@@ -97,28 +59,6 @@ public interface DictionaryWordDao extends JpaRepository<WordEntity, Long> {
                 10;
             """)
     List<String> findWordContaining(@Param("wordStr") String wordStr);
-
-    @Query(nativeQuery = true,
-            value = """
-            SELECT
-                w.word_id AS wordId,
-                w.word,
-                STRING_AGG(DISTINCT t.translation, ';') AS translations,
-                STRING_AGG(DISTINCT u.example || '|' || u.example_translation, ';') AS usageexamples
-            FROM
-                word w
-                    LEFT JOIN
-                translation t ON w.word_id = t.word_id
-                    LEFT JOIN
-                usage_example u ON w.word_id = u.word_id
-            WHERE
-                w.user_id = :userId
-            GROUP BY
-                wordId, w.word
-            ORDER BY
-                w.word;
-            """)
-    List<Tuple> getAllWordsForUser(@Param("userId") Long userId);
 
     Optional<WordEntity> findByWordId(@Param("wordId") Long wordId);
 }

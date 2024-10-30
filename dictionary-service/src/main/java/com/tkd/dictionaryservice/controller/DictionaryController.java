@@ -3,8 +3,7 @@ package com.tkd.dictionaryservice.controller;
 import com.tkd.apis.DictV1Api;
 import com.tkd.dictionaryservice.service.DictionaryService;
 import com.tkd.dictionaryservice.utility.DictionaryServiceUtility;
-import com.tkd.models.DictionaryItem;
-import com.tkd.models.WordRequest;
+import com.tkd.models.WordModel;
 import feign.FeignException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +27,7 @@ public class DictionaryController implements DictV1Api {
     private final DictionaryService dictionaryService;
 
     @Override
-    public ResponseEntity<BigDecimal> addToDictionary(WordRequest newWord) {
+    public ResponseEntity<BigDecimal> addToDictionary(WordModel newWord) {
         HttpServletRequest request = getRequest().orElseThrow(() -> new RuntimeException("request is null"));
 
         Cookie[] cookies = request.getCookies();
@@ -54,8 +53,8 @@ public class DictionaryController implements DictV1Api {
     }
 
     @Override
-    public ResponseEntity<List<DictionaryItem>> getRandomWords() {
-        List<DictionaryItem> items = dictionaryService.getRandomWords();
+    public ResponseEntity<List<WordModel>> getRandomWords() {
+        List<WordModel> items = dictionaryService.getRandomWords();
         if(items.isEmpty())
             return ResponseEntity.notFound().build();
 
@@ -63,8 +62,8 @@ public class DictionaryController implements DictV1Api {
     }
 
     @Override
-    public ResponseEntity<DictionaryItem> getWord(BigDecimal wordId) {
-        DictionaryItem dictionaryItem = dictionaryService.getWord(wordId);
+    public ResponseEntity<WordModel> getWord(BigDecimal wordId) {
+        WordModel dictionaryItem = dictionaryService.getWord(wordId);
         if (dictionaryItem == null)
             return ResponseEntity.notFound().build();
 
@@ -72,7 +71,7 @@ public class DictionaryController implements DictV1Api {
     }
 
     @Override
-    public ResponseEntity<Integer> editWord(BigDecimal wordId, WordRequest body) {
+    public ResponseEntity<Integer> editWord(BigDecimal wordId, WordModel body) {
         return DictV1Api.super.editWord(wordId, body);
     }
 
@@ -110,7 +109,7 @@ public class DictionaryController implements DictV1Api {
                 .build();
 
         try {
-            Page<DictionaryItem> dictionaryItems = dictionaryService.getAllUserWords(responseCookie.toString(), pageNum);
+            Page<WordModel> dictionaryItems = dictionaryService.getAllUserWords(responseCookie.toString(), pageNum);
             return ResponseEntity.ok(dictionaryItems);
         } catch (FeignException.Forbidden error) {
             log.info(error.getMessage());

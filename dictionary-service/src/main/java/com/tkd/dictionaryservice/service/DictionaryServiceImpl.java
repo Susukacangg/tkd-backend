@@ -8,10 +8,9 @@ import com.tkd.dictionaryservice.feign.IamFeignService;
 import com.tkd.dictionaryservice.repository.DictionaryExampleDao;
 import com.tkd.dictionaryservice.repository.DictionaryTranslationDao;
 import com.tkd.dictionaryservice.repository.DictionaryWordDao;
-import com.tkd.models.DictionaryItem;
-import com.tkd.models.TranslationRequest;
-import com.tkd.models.UsageExampleRequest;
-import com.tkd.models.WordRequest;
+import com.tkd.models.WordModel;
+import com.tkd.models.TranslationModel;
+import com.tkd.models.UsageExampleModel;
 import feign.FeignException;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -38,7 +38,7 @@ public class DictionaryServiceImpl implements DictionaryService {
     private static final int PAGE_SIZE = 10;
 
     @Override
-    public BigDecimal addNewWord(WordRequest word, String tokenCookieString) {
+    public BigDecimal addNewWord(WordModel word, String tokenCookieString) {
         UserViewDto userViewDto = iamFeignService.getUserDetails(tokenCookieString);
 
         WordEntity newWord = WordEntity.builder()
@@ -47,7 +47,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                 .build();
         WordEntity savedWord = dictionaryWordDao.save(newWord);
 
-        for(TranslationRequest translation : word.getTranslations()) {
+        for(TranslationModel translation : word.getTranslations()) {
             TranslationEntity newTranslation = TranslationEntity.builder()
                     .translation(translation.getTranslation())
                     .wordId(savedWord.getWordId())
@@ -55,7 +55,7 @@ public class DictionaryServiceImpl implements DictionaryService {
             dictionaryTranslationDao.save(newTranslation);
         }
 
-        for(UsageExampleRequest usageExample : word.getUsageExamples()) {
+        for(UsageExampleModel usageExample : word.getUsageExamples()) {
             UsageExampleEntity newExample = UsageExampleEntity.builder()
                     .example(usageExample.getExample())
                     .exampleTranslation(usageExample.getExampleTranslation())
@@ -68,72 +68,69 @@ public class DictionaryServiceImpl implements DictionaryService {
     }
 
     @Override
-    public DictionaryItem getWord(BigDecimal wordId) {
-        DictionaryItem dictionaryItem = null;
+    public WordModel getWord(BigDecimal wordId) {
+        WordModel wordModel = null;
 
-        Tuple queryResult = dictionaryWordDao.findWordByWordId(wordId.longValue()).orElse(null);
-        if (queryResult != null) {
-            dictionaryItem = new DictionaryItem();
-            dictionaryItem.setUsername(queryResult.get("username").toString());
-            dictionaryItem.setWordId(BigDecimal.valueOf((Long) queryResult.get("wordId")));
-            dictionaryItem.setWord(queryResult.get("word").toString());
-            dictionaryItem.setTranslations(queryResult.get("translations").toString());
-            dictionaryItem.setUsageExamples(queryResult.get("usageExamples").toString());
-        }
+        Tuple queryResult = dictionaryWordDao
+                .findWord(
+                    wordId.longValue(),
+                    null,
+                    null,
+                    false,
+                    1
+                ).stream().findFirst()
+                .orElse(null);
 
-        return dictionaryItem;
+        if (queryResult != null)
+            wordModel = tupleToWordModel(queryResult);
+
+        return wordModel;
     }
 
     @Override
-    public Integer editWord(BigDecimal wordId, WordRequest editedWord) {
+    public Integer editWord(BigDecimal wordId, WordModel editedWord) {
         return 0;
     }
 
     @Override
-    public List<DictionaryItem> getRandomWords() {
-        List<Tuple> queryResults = dictionaryWordDao.getRandomWords();
-        List<DictionaryItem> dictionaryItems = new ArrayList<>();
+    public List<WordModel> getRandomWords() {
+        List<Tuple> queryResults = dictionaryWordDao
+                .findWord(
+                        null,
+                        null,
+                        null,
+                        true,
+                        20
+                );
+        List<WordModel> wordModels = new ArrayList<>();
 
-        if(!queryResults.isEmpty()) {
-            dictionaryItems = queryResults.stream().map(
-                    tuple -> {
-                        DictionaryItem dictionaryItem = new DictionaryItem();
-                        dictionaryItem.setUsername(tuple.get("username").toString());
-                        dictionaryItem.setWordId(BigDecimal.valueOf((Long) tuple.get("wordId")));
-                        dictionaryItem.setWord(tuple.get("word").toString());
-                        dictionaryItem.setTranslations(tuple.get("translations").toString());
-                        dictionaryItem.setUsageExamples(tuple.get("usageExamples").toString());
-                        return dictionaryItem;
-                    }
-            ).toList();
-        }
+        if(!queryResults.isEmpty())
+            wordModels = queryResults.stream().map(this::tupleToWordModel).toList();
 
-        return dictionaryItems;
+        return wordModels;
     }
 
     @Override
-    public Page<DictionaryItem> findWord(String word, int pageNum) {
-        List<Tuple> queryResults = dictionaryWordDao.findWord(word);
+    public Page<WordModel> findWord(String word, int pageNum) {
+        Pageable pageable = PageRequest.of(pageNum - 1, PAGE_SIZE);
+
+        List<Tuple> queryResults = dictionaryWordDao
+                .findWord(
+                        null,
+                        word,
+                        null,
+                        false,
+                        Integer.MAX_VALUE
+                );
 
         if(!queryResults.isEmpty()) {
-            List<DictionaryItem> dictionaryItems = queryResults.stream().map(
-                    tuple -> {
-                        DictionaryItem dictionaryItem = new DictionaryItem();
-                        dictionaryItem.setUsername(tuple.get("username").toString());
-                        dictionaryItem.setWordId(BigDecimal.valueOf((Long) tuple.get("wordId")));
-                        dictionaryItem.setWord(tuple.get("word").toString());
-                        dictionaryItem.setTranslations(tuple.get("translations").toString());
-                        dictionaryItem.setUsageExamples(tuple.get("usageExamples").toString());
-                        return dictionaryItem;
-                    }
-            ).toList();
+            List<WordModel> wordModels = queryResults.stream().map(this::tupleToWordModel).toList();
 
-            Pageable pageable = PageRequest.of(pageNum - 1, PAGE_SIZE);
             int sublistStart = (int) pageable.getOffset();
-            int subListEnd = Math.min((sublistStart + PAGE_SIZE), dictionaryItems.size());
-            List<DictionaryItem> pagedDictionaryItems = dictionaryItems.subList(sublistStart, subListEnd);
+            int subListEnd = Math.min((sublistStart + PAGE_SIZE), wordModels.size());
+            List<WordModel> pagedWordModels = wordModels.subList(sublistStart, subListEnd);
 
-            return new PageImpl<>(pagedDictionaryItems, pageable, dictionaryItems.size());
+            return new PageImpl<>(pagedWordModels, pageable, wordModels.size());
         }
 
         return null;
@@ -150,28 +147,73 @@ public class DictionaryServiceImpl implements DictionaryService {
     }
 
     @Override
-    public Page<DictionaryItem> getAllUserWords(String tokenCookieString, int pageNum) throws FeignException.Forbidden {
+    public Page<WordModel> getAllUserWords(String tokenCookieString, int pageNum) throws FeignException.Forbidden {
         UserViewDto userViewDto = iamFeignService.getUserDetails(tokenCookieString);
 
-        List<Tuple> queryResults = dictionaryWordDao.getAllWordsForUser(userViewDto.getId().longValue());
-        List<DictionaryItem> dictionaryItems;
+        Pageable pageable = PageRequest.of(pageNum - 1, PAGE_SIZE);
+        List<Tuple> queryResults = dictionaryWordDao
+                .findWord(
+                        null,
+                        null,
+                        userViewDto.getId().longValue(),
+                        false,
+                        Integer.MAX_VALUE
+                );
+
+        List<WordModel> wordModels;
         if(!queryResults.isEmpty()) {
-            dictionaryItems = queryResults.stream().map(item -> {
-                DictionaryItem dictionaryItem = new DictionaryItem();
-                dictionaryItem.setWordId(BigDecimal.valueOf((Long) item.get("wordId")));
-                dictionaryItem.setWord(item.get("word").toString());
-                dictionaryItem.setTranslations(item.get("translations").toString());
-                dictionaryItem.setUsageExamples(item.get("usageExamples").toString());
-                return dictionaryItem;
-            }).toList();
+            wordModels = queryResults.stream().map(this::tupleToWordModel).toList();
 
-            Pageable pageable = PageRequest.of(pageNum - 1, PAGE_SIZE);
             int sublistStart = (int) pageable.getOffset();
-            int subListEnd = Math.min((sublistStart + PAGE_SIZE), dictionaryItems.size());
-            List<DictionaryItem> pagedDictionaryItems = dictionaryItems.subList(sublistStart, subListEnd);
+            int subListEnd = Math.min((sublistStart + PAGE_SIZE), wordModels.size());
+            List<WordModel> pagedWordModels = wordModels.subList(sublistStart, subListEnd);
 
-            return new PageImpl<>(pagedDictionaryItems, pageable, dictionaryItems.size());
+            return new PageImpl<>(pagedWordModels, pageable, wordModels.size());
         }
         return null;
+    }
+
+    private WordModel tupleToWordModel(Tuple tuple) {
+        WordModel wordModel = new WordModel();
+        wordModel.setUsername(tuple.get("username").toString());
+        wordModel.setWordId(BigDecimal.valueOf((Long) tuple.get("wordId")));
+        wordModel.setWord(tuple.get("word").toString());
+        wordModel.setTranslations(
+                Arrays.stream(
+                        tuple.get("translations").toString().split(";")
+                ).map(value -> {
+                    // split the information from the result of the query
+                    String stringId = value.split("~")[0];
+                    String translationString = value.split("~")[1];
+                    BigDecimal translationId = BigDecimal.valueOf(Long.parseLong(stringId));
+
+                    // return the actual object
+                    TranslationModel translation = new TranslationModel();
+                    translation.setTranslationId(translationId);
+                    translation.setTranslation(translationString);
+                    return translation;
+                }).toList()
+        );
+        wordModel.setUsageExamples(
+                Arrays.stream(
+                        tuple.get("usageExamples").toString().split(";")
+                ).map(value -> {
+                    String[] usageExampleString = value.split("~");
+                    String stringId = usageExampleString[0];
+
+                    String[] examples = usageExampleString[1].split("\\|");
+                    String kadazanExample = examples[0];
+                    String translatedExample = examples[1];
+                    BigDecimal exampleId = BigDecimal.valueOf(Long.parseLong(stringId));
+
+                    UsageExampleModel usageExample = new UsageExampleModel();
+                    usageExample.setExampleId(exampleId);
+                    usageExample.setExample(kadazanExample);
+                    usageExample.setExampleTranslation(translatedExample);
+                    return usageExample;
+                }).toList()
+        );
+
+        return wordModel;
     }
 }

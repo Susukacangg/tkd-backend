@@ -1,8 +1,7 @@
 package com.tkd.dictionaryservice.service;
 
 
-import com.tkd.models.DictionaryItem;
-import com.tkd.models.WordRequest;
+import com.tkd.models.WordModel;
 import feign.FeignException;
 import org.springframework.data.domain.Page;
 
@@ -10,17 +9,17 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public interface DictionaryService {
-    BigDecimal addNewWord(WordRequest newWord, String tokenCookieString);
+    BigDecimal addNewWord(WordModel newWord, String tokenCookieString);
 
-    DictionaryItem getWord(BigDecimal wordId);
+    WordModel getWord(BigDecimal wordId);
 
-    Integer editWord(BigDecimal wordId, WordRequest editedWord);
+    Integer editWord(BigDecimal wordId, WordModel editedWord);
 
-    List<DictionaryItem> getRandomWords();
+    List<WordModel> getRandomWords();
 
-    Page<DictionaryItem> findWord(String word, int pageNum);
+    Page<WordModel> findWord(String word, int pageNum);
 
     List<String> suggestWord(String searchStr);
 
-    Page<DictionaryItem> getAllUserWords(String tokenCookieString, int pageNum) throws FeignException.Forbidden;
+    Page<WordModel> getAllUserWords(String tokenCookieString, int pageNum) throws FeignException.Forbidden;
 }
