@@ -85,6 +85,11 @@ public class DictionaryServiceImpl implements DictionaryService {
     }
 
     @Override
+    public Integer editWord(BigDecimal wordId, WordRequest editedWord) {
+        return 0;
+    }
+
+    @Override
     public List<DictionaryItem> getRandomWords() {
         List<Tuple> queryResults = dictionaryWordDao.getRandomWords();
         List<DictionaryItem> dictionaryItems = new ArrayList<>();

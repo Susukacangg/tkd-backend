@@ -119,4 +119,6 @@ public interface DictionaryWordDao extends JpaRepository<WordEntity, Long> {
                 w.word;
             """)
     List<Tuple> getAllWordsForUser(@Param("userId") Long userId);
+
+    Optional<WordEntity> findByWordId(@Param("wordId") Long wordId);
 }

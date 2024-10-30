@@ -21,7 +21,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WordRequest"
+              $ref: "#/components/schemas/WordModel"
       responses:
         "200":
           description: Contribution feedback
@@ -64,6 +64,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DictionaryItem'
+    put:
+      tags:
+        - DictV1
+      operationId: editWord
+      summary: Update the word based on user edit
+      parameters:
+        - in: path
+          name: wordId
+          required: true
+          description: Word ID of the word to be updated
+          schema:
+            type: number
+      requestBody:
+        description: Details of the word to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WordModel'
+      responses:
+        "200":
+          description: Word ID
+          content:
+            application/json:
+              schema:
+                type: integer
   /dict/search:
     get:
       tags:
@@ -135,27 +161,33 @@ paths:
 
 components:
   schemas:
-    WordRequest:
+    WordModel:
       type: object
       properties:
+        wordId:
+          type: number
         word:
           type: string
         translations:
           type: array
           items:
-            $ref: '#/components/schemas/TranslationRequest'
+            $ref: '#/components/schemas/TranslationModel'
         usageExamples:
           type: array
           items:
-            $ref: '#/components/schemas/UsageExampleRequest'
-    TranslationRequest:
+            $ref: '#/components/schemas/UsageExampleModel'
+    TranslationModel:
       type: object
       properties:
+        translationId:
+          type: number
         translation:
           type: string
-    UsageExampleRequest:
+    UsageExampleModel:
       type: object
       properties:
+        exampleId:
+          type: number
         example:
           type: string
         exampleTranslation:

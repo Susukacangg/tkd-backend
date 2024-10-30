@@ -72,6 +72,11 @@ public class DictionaryController implements DictV1Api {
     }
 
     @Override
+    public ResponseEntity<Integer> editWord(BigDecimal wordId, WordRequest body) {
+        return DictV1Api.super.editWord(wordId, body);
+    }
+
+    @Override
     public ResponseEntity<Object> findWord(String word, Integer pageNum) {
         return ResponseEntity.ok(dictionaryService.findWord(word, pageNum));
     }

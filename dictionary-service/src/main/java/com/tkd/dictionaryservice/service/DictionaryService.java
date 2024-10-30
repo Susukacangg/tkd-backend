@@ -14,6 +14,8 @@ public interface DictionaryService {
 
     DictionaryItem getWord(BigDecimal wordId);
 
+    Integer editWord(BigDecimal wordId, WordRequest editedWord);
+
     List<DictionaryItem> getRandomWords();
 
     Page<DictionaryItem> findWord(String word, int pageNum);
