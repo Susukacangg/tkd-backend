@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -85,11 +86,6 @@ public class DictionaryServiceImpl implements DictionaryService {
             wordModel = tupleToWordModel(queryResult);
 
         return wordModel;
-    }
-
-    @Override
-    public Integer editWord(BigDecimal wordId, WordModel editedWord) {
-        return 0;
     }
 
     @Override
@@ -215,5 +211,76 @@ public class DictionaryServiceImpl implements DictionaryService {
         );
 
         return wordModel;
+    }
+
+    @Override
+    public Integer editWord(WordModel editedWord) {
+        dictionaryWordDao.findByWordId(editedWord.getWordId().longValue()).ifPresent(wordEntity -> {
+            // update word
+            wordEntity.setWord(editedWord.getWord());
+            dictionaryWordDao.save(wordEntity);
+
+            // find the existing translations for the current word
+            List<TranslationEntity> existingTranslations = dictionaryTranslationDao.findByWordId(editedWord.getWordId().longValue());
+            // getting the current words' translations' IDs
+            // don't count the translations with no IDs
+            List<BigDecimal> editedTranslationIds = editedWord.getTranslations().stream()
+                    .map(TranslationModel::getTranslationId)
+                    .filter(Objects::nonNull)
+                    .toList();
+            // filter out the existing translations that are not included
+            // in the edited words' translations'
+            existingTranslations.stream()
+                    .filter(translationEntity ->
+                                    !editedTranslationIds.contains(BigDecimal.valueOf(translationEntity.getTranslationId())))
+                    .forEach(dictionaryTranslationDao::delete);
+
+            editedWord.getTranslations().forEach(translation -> {
+                if(translation.getTranslationId() != null) {
+                    dictionaryTranslationDao.findByTranslationId(translation.getTranslationId().longValue()).ifPresent(
+                            translationEntity -> {
+                                translationEntity.setTranslation(translation.getTranslation());
+                                dictionaryTranslationDao.save(translationEntity);
+                            });
+                } else {
+                    TranslationEntity translationEntity = TranslationEntity.builder()
+                            .translation(translation.getTranslation())
+                            .wordId(editedWord.getWordId().longValue())
+                            .build();
+                    dictionaryTranslationDao.save(translationEntity);
+                }
+            });
+
+            List<UsageExampleEntity> existingExamples = dictionaryExampleDao.findByWordId(editedWord.getWordId().longValue());
+
+            List<BigDecimal> editedExampleIds = editedWord.getUsageExamples().stream()
+                    .map(UsageExampleModel::getExampleId)
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            existingExamples.stream()
+                    .filter(exampleEntity ->
+                            !editedExampleIds.contains(BigDecimal.valueOf(exampleEntity.getUsageExampleId())))
+                    .forEach(dictionaryExampleDao::delete);
+
+            editedWord.getUsageExamples().forEach(example -> {
+                if(example.getExampleId() != null) {
+                    dictionaryExampleDao.findByUsageExampleId(example.getExampleId().longValue()).ifPresent(exampleEntity -> {
+                        exampleEntity.setExample(example.getExample());
+                        exampleEntity.setExampleTranslation(example.getExampleTranslation());
+                        dictionaryExampleDao.save(exampleEntity);
+                    });
+                } else {
+                    UsageExampleEntity usageExampleEntity = UsageExampleEntity.builder()
+                            .example(example.getExample())
+                            .exampleTranslation(example.getExampleTranslation())
+                            .wordId(editedWord.getWordId().longValue())
+                            .build();
+                    dictionaryExampleDao.save(usageExampleEntity);
+                }
+            });
+        });
+
+        return editedWord.getWordId().intValue();
     }
 }

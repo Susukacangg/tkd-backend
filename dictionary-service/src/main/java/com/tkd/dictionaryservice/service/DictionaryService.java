@@ -13,8 +13,6 @@ public interface DictionaryService {
 
     WordModel getWord(BigDecimal wordId);
 
-    Integer editWord(BigDecimal wordId, WordModel editedWord);
-
     List<WordModel> getRandomWords();
 
     Page<WordModel> findWord(String word, int pageNum);
@@ -22,4 +20,6 @@ public interface DictionaryService {
     List<String> suggestWord(String searchStr);
 
     Page<WordModel> getAllUserWords(String tokenCookieString, int pageNum) throws FeignException.Forbidden;
+
+    Integer editWord(WordModel editedWord);
 }

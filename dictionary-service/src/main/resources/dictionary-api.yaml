@@ -69,13 +69,6 @@ paths:
         - DictV1
       operationId: editWord
       summary: Update the word based on user edit
-      parameters:
-        - in: path
-          name: wordId
-          required: true
-          description: Word ID of the word to be updated
-          schema:
-            type: number
       requestBody:
         description: Details of the word to be updated
         required: true
