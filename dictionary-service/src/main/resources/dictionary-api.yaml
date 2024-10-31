@@ -83,6 +83,23 @@ paths:
             application/json:
               schema:
                 type: integer
+    delete:
+      tags:
+        - DictV1
+      operationId: deleteWord
+      summary: Delete word based on wordId
+      parameters:
+        - in: path
+          name: wordId
+          required: true
+          description: ID of word to be deleted
+          schema:
+            type: number
+      responses:
+        "200":
+          description: to indicate whether delete was successful
+        "500":
+          description: to indicate delete was unsuccessful
   /dict/search:
     get:
       tags:

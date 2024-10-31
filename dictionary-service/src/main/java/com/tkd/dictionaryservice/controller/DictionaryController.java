@@ -118,6 +118,14 @@ public class DictionaryController implements DictV1Api {
     }
 
     @Override
+    public ResponseEntity<Void> deleteWord(BigDecimal wordId) {
+        if(dictionaryService.deleteWord(wordId))
+            return ResponseEntity.ok().build();
+
+        return ResponseEntity.internalServerError().build();
+    }
+
+    @Override
     public Optional<HttpServletRequest> getRequest() {
         return Optional.of(
                 ((ServletRequestAttributes)

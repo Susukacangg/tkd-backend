@@ -34,6 +34,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(matcherRegistry -> matcherRegistry
                         .requestMatchers(URL_BLACKLIST).authenticated()
                         .requestMatchers(HttpMethod.PUT, "/dict/{wordId}").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/dict/{wordId}").authenticated()
                         .anyRequest().permitAll())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

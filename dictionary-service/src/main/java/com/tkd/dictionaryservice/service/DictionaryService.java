@@ -22,4 +22,6 @@ public interface DictionaryService {
     Page<WordModel> getAllUserWords(String tokenCookieString, int pageNum) throws FeignException.Forbidden;
 
     Integer editWord(WordModel editedWord);
+
+    Boolean deleteWord(BigDecimal wordId);
 }

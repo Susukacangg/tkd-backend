@@ -8,6 +8,7 @@ import com.tkd.dictionaryservice.feign.IamFeignService;
 import com.tkd.dictionaryservice.repository.DictionaryExampleDao;
 import com.tkd.dictionaryservice.repository.DictionaryTranslationDao;
 import com.tkd.dictionaryservice.repository.DictionaryWordDao;
+import com.tkd.dictionaryservice.utility.DictionaryServiceUtility;
 import com.tkd.models.WordModel;
 import com.tkd.models.TranslationModel;
 import com.tkd.models.UsageExampleModel;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -83,7 +83,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                 .orElse(null);
 
         if (queryResult != null)
-            wordModel = tupleToWordModel(queryResult);
+            wordModel = DictionaryServiceUtility.tupleToWordModel(queryResult);
 
         return wordModel;
     }
@@ -101,7 +101,7 @@ public class DictionaryServiceImpl implements DictionaryService {
         List<WordModel> wordModels = new ArrayList<>();
 
         if(!queryResults.isEmpty())
-            wordModels = queryResults.stream().map(this::tupleToWordModel).toList();
+            wordModels = queryResults.stream().map(DictionaryServiceUtility::tupleToWordModel).toList();
 
         return wordModels;
     }
@@ -120,7 +120,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                 );
 
         if(!queryResults.isEmpty()) {
-            List<WordModel> wordModels = queryResults.stream().map(this::tupleToWordModel).toList();
+            List<WordModel> wordModels = queryResults.stream().map(DictionaryServiceUtility::tupleToWordModel).toList();
 
             int sublistStart = (int) pageable.getOffset();
             int subListEnd = Math.min((sublistStart + PAGE_SIZE), wordModels.size());
@@ -158,7 +158,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 
         List<WordModel> wordModels;
         if(!queryResults.isEmpty()) {
-            wordModels = queryResults.stream().map(this::tupleToWordModel).toList();
+            wordModels = queryResults.stream().map(DictionaryServiceUtility::tupleToWordModel).toList();
 
             int sublistStart = (int) pageable.getOffset();
             int subListEnd = Math.min((sublistStart + PAGE_SIZE), wordModels.size());
@@ -169,50 +169,6 @@ public class DictionaryServiceImpl implements DictionaryService {
         return null;
     }
 
-    private WordModel tupleToWordModel(Tuple tuple) {
-        WordModel wordModel = new WordModel();
-        wordModel.setUsername(tuple.get("username").toString());
-        wordModel.setWordId(BigDecimal.valueOf((Long) tuple.get("wordId")));
-        wordModel.setWord(tuple.get("word").toString());
-        wordModel.setTranslations(
-                Arrays.stream(
-                        tuple.get("translations").toString().split(";")
-                ).map(value -> {
-                    // split the information from the result of the query
-                    String stringId = value.split("~")[0];
-                    String translationString = value.split("~")[1];
-                    BigDecimal translationId = BigDecimal.valueOf(Long.parseLong(stringId));
-
-                    // return the actual object
-                    TranslationModel translation = new TranslationModel();
-                    translation.setTranslationId(translationId);
-                    translation.setTranslation(translationString);
-                    return translation;
-                }).toList()
-        );
-        wordModel.setUsageExamples(
-                Arrays.stream(
-                        tuple.get("usageExamples").toString().split(";")
-                ).map(value -> {
-                    String[] usageExampleString = value.split("~");
-                    String stringId = usageExampleString[0];
-
-                    String[] examples = usageExampleString[1].split("\\|");
-                    String kadazanExample = examples[0];
-                    String translatedExample = examples[1];
-                    BigDecimal exampleId = BigDecimal.valueOf(Long.parseLong(stringId));
-
-                    UsageExampleModel usageExample = new UsageExampleModel();
-                    usageExample.setExampleId(exampleId);
-                    usageExample.setExample(kadazanExample);
-                    usageExample.setExampleTranslation(translatedExample);
-                    return usageExample;
-                }).toList()
-        );
-
-        return wordModel;
-    }
-
     @Override
     public Integer editWord(WordModel editedWord) {
         dictionaryWordDao.findByWordId(editedWord.getWordId().longValue()).ifPresent(wordEntity -> {
@@ -220,21 +176,21 @@ public class DictionaryServiceImpl implements DictionaryService {
             wordEntity.setWord(editedWord.getWord());
             dictionaryWordDao.save(wordEntity);
 
+            // TRANSLATIONS
             // find the existing translations for the current word
             List<TranslationEntity> existingTranslations = dictionaryTranslationDao.findByWordId(editedWord.getWordId().longValue());
-            // getting the current words' translations' IDs
-            // don't count the translations with no IDs
+            // getting the current words' translations' IDs that have been edited
+            // don't count the translations with no IDs; these are new translations added
             List<BigDecimal> editedTranslationIds = editedWord.getTranslations().stream()
                     .map(TranslationModel::getTranslationId)
                     .filter(Objects::nonNull)
                     .toList();
-            // filter out the existing translations that are not included
-            // in the edited words' translations'
+            // filter out the existing translations that have been removed from the edit request
             existingTranslations.stream()
                     .filter(translationEntity ->
                                     !editedTranslationIds.contains(BigDecimal.valueOf(translationEntity.getTranslationId())))
                     .forEach(dictionaryTranslationDao::delete);
-
+            // edit the translations that got edited by user, and add new ones if dun have ID
             editedWord.getTranslations().forEach(translation -> {
                 if(translation.getTranslationId() != null) {
                     dictionaryTranslationDao.findByTranslationId(translation.getTranslationId().longValue()).ifPresent(
@@ -251,6 +207,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                 }
             });
 
+            // USAGE EXAMPLES
             List<UsageExampleEntity> existingExamples = dictionaryExampleDao.findByWordId(editedWord.getWordId().longValue());
 
             List<BigDecimal> editedExampleIds = editedWord.getUsageExamples().stream()
@@ -282,5 +239,28 @@ public class DictionaryServiceImpl implements DictionaryService {
         });
 
         return editedWord.getWordId().intValue();
+    }
+
+    @Override
+    public Boolean deleteWord(BigDecimal wordId) {
+        boolean isDeleteSuccess;
+
+        try {
+            dictionaryWordDao.findByWordId(wordId.longValue()).ifPresent(dictionaryWordDao::delete);
+
+            List<TranslationEntity> translationEntities = dictionaryTranslationDao.findByWordId(wordId.longValue());
+            if (!translationEntities.isEmpty())
+                dictionaryTranslationDao.deleteAll(translationEntities);
+
+            List<UsageExampleEntity> usageExampleEntities = dictionaryExampleDao.findByWordId(wordId.longValue());
+            if (!usageExampleEntities.isEmpty())
+                dictionaryExampleDao.deleteAll(usageExampleEntities);
+
+            isDeleteSuccess = true;
+        } catch (Exception e) {
+            isDeleteSuccess = false;
+        }
+
+        return isDeleteSuccess;
     }
 }
