@@ -54,11 +54,7 @@ public class DictionaryController implements DictV1Api {
 
     @Override
     public ResponseEntity<List<WordModel>> getRandomWords() {
-        List<WordModel> items = dictionaryService.getRandomWords();
-        if(items.isEmpty())
-            return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok(items);
+        return ResponseEntity.ok(dictionaryService.getRandomWords());
     }
 
     @Override
