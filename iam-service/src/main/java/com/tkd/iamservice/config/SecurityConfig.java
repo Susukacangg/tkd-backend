@@ -26,6 +26,10 @@ public class SecurityConfig {
             "/user/details",
     };
 
+    private final String[] URL_BLACKLIST_ALL = {
+            "/swagger-ui/**"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -33,6 +37,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(matcherRegistry -> matcherRegistry
                         .requestMatchers(URL_BLACKLIST).authenticated()
+                        .requestMatchers(URL_BLACKLIST_ALL).denyAll()
                         .anyRequest().permitAll())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

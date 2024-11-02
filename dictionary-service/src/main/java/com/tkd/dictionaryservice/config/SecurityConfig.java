@@ -23,7 +23,11 @@ public class SecurityConfig {
 
     private final String[] URL_BLACKLIST = {
             "/dict/add",
-            "/dict/get-users-words"
+            "/dict/get-users-words",
+    };
+
+    private final String[] URL_BLACKLIST_ALL = {
+            "/swagger-ui/**"
     };
 
     @Bean
@@ -35,6 +39,7 @@ public class SecurityConfig {
                         .requestMatchers(URL_BLACKLIST).authenticated()
                         .requestMatchers(HttpMethod.PUT, "/dict/{wordId}").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/dict/{wordId}").authenticated()
+                        .requestMatchers(URL_BLACKLIST_ALL).denyAll()
                         .anyRequest().permitAll())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
