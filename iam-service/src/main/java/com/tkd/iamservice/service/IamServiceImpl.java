@@ -64,7 +64,7 @@ public class IamServiceImpl implements IamService {
                     .sameSite("None")
                     .secure(true)
                     .path("/")
-                    .maxAge(60 * 15)
+                    .maxAge(60 * 60 * 24 * 7)
                     .build();
 
             registerResponse.setMessage("Successfully registered!");
