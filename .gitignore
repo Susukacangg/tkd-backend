@@ -15,10 +15,6 @@ out/
 *.log
 logs/
 
-# Application properties
-application*.yml
-application*.yaml
-
 # OS generated files
 .DS_Store
 Thumbs.db

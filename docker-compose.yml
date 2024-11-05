@@ -1,0 +1,46 @@
+services:
+  dictionary-service:
+    build:
+      context: .
+      dockerfile: dictionary-service/Dockerfile
+    container_name: dictionary-service
+    image: ${DICTIONARY_SERVICE_IMAGE_NAME}
+    command: ["java", "-jar", "app.jar"]
+    ports:
+      - "8082:8080"
+    environment:
+      - PORT=8080
+      - INTERNAL_SECRET=${INTERNAL_SECRET}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    env_file:
+      - .env
+    networks:
+      - tkd-network
+
+  iam-service:
+    build:
+      context: .
+      dockerfile: iam-service/Dockerfile
+    container_name: iam-service
+    image: ${IAM_SERVICE_IMAGE_NAME}
+    command: ["java", "-jar", "app.jar"]
+    ports:
+      - "8081:8080"
+    environment:
+      - PORT=8080
+      - INTERNAL_SECRET=${INTERNAL_SECRET}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    env_file:
+      - .env
+    networks:
+      - tkd-network
+
+networks:
+  tkd-network:
+    driver: bridge
