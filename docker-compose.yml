@@ -15,6 +15,7 @@ services:
       - DB_URL=${DB_URL}
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
+      - IAM_SERVICE_URL${IAM_SERVICE_URL}
     env_file:
       - .env
     networks:
