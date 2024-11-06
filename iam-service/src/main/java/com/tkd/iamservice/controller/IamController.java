@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -53,7 +54,10 @@ public class IamController implements IamV1Api {
                     .header(HttpHeaders.SET_COOKIE, loginResponse.getTokenCookie().toString())
                     .header(HttpHeaders.SET_COOKIE, loginResponse.getRefreshCookie().toString())
                     .body(loginResponse.getMessage());
-        } catch (Exception e) {
+        } catch (UsernameNotFoundException e) {
+            loginResponse.setMessage("User not registered");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(loginResponse.getMessage());
+        } catch (AuthenticationException e) {
             loginResponse.setMessage("The login ID or password provided is incorrect");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(loginResponse.getMessage());
         }
