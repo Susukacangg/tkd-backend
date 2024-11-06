@@ -18,6 +18,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -80,15 +81,15 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public AuthResponseDto loginUser(LoginRequest loginReq) throws Exception {
+    public AuthResponseDto loginUser(LoginRequest loginReq) throws UsernameNotFoundException, AuthenticationException {
+        // get username and generate jwt token and refresh token
+        Optional<IamUserEntity> retrievedUser = userDao.findByUsernameOrEmail(loginReq.getLogin(), loginReq.getLogin());
+        IamUserEntity userDetails = retrievedUser.orElseThrow(() -> new UsernameNotFoundException(loginReq.getLogin() + " not found!"));
+
         // throws exception if bad credentials
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginReq.getLogin(), loginReq.getPassword()
         ));
-
-        // get username and generate jwt token and refresh token
-        Optional<IamUserEntity> retrievedUser = userDao.findByUsernameOrEmail(loginReq.getLogin(), loginReq.getLogin());
-        IamUserEntity userDetails = retrievedUser.orElseThrow(() -> new UsernameNotFoundException(loginReq.getLogin() + " not found!"));
 
         String token = jwtService.generateToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);

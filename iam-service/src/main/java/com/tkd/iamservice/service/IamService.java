@@ -7,12 +7,13 @@ import com.tkd.models.RegistrationRequest;
 import com.tkd.models.UserView;
 import jakarta.servlet.http.Cookie;
 import org.springframework.security.authentication.AccountExpiredException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public interface IamService {
     AuthResponseDto registerUser(RegistrationRequest regisReq) throws Exception;
 
-    AuthResponseDto loginUser(LoginRequest loginReq) throws Exception;
+    AuthResponseDto loginUser(LoginRequest loginReq) throws UsernameNotFoundException, AuthenticationException;
 
     AuthResponseDto logoutUser();
 
