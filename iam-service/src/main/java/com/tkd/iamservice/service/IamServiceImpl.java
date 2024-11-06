@@ -34,6 +34,8 @@ public class IamServiceImpl implements IamService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
+    private final String COOKIE_DOMAIN = "thekadazandusundictionary.com";
+
     @Override
     public AuthResponseDto registerUser(RegistrationRequest regisReq) throws Exception {
         // build new user
@@ -56,6 +58,7 @@ public class IamServiceImpl implements IamService {
                     .sameSite("None")
                     .secure(true)
                     .path("/")
+                    .domain(COOKIE_DOMAIN)
                     .maxAge(60 * 15)
                     .build();
 
@@ -64,6 +67,7 @@ public class IamServiceImpl implements IamService {
                     .sameSite("None")
                     .secure(true)
                     .path("/")
+                    .domain(COOKIE_DOMAIN)
                     .maxAge(60 * 60 * 24 * 7)
                     .build();
 
@@ -95,6 +99,7 @@ public class IamServiceImpl implements IamService {
                 .sameSite("None")
                 .secure(true)
                 .path("/")
+                .domain(COOKIE_DOMAIN)
                 .maxAge(60 * 15)
                 .build();
 
@@ -103,6 +108,7 @@ public class IamServiceImpl implements IamService {
                 .sameSite("None")
                 .secure(true)
                 .path("/")
+                .domain(COOKIE_DOMAIN)
                 .maxAge(60 * 60 * 24 * 7)
                 .build();
 
@@ -121,6 +127,7 @@ public class IamServiceImpl implements IamService {
                 .sameSite("None")
                 .secure(true)
                 .path("/")
+                .domain(COOKIE_DOMAIN)
                 .maxAge(0)
                 .build();
 
@@ -129,6 +136,7 @@ public class IamServiceImpl implements IamService {
                 .sameSite("None")
                 .secure(true)
                 .path("/")
+                .domain(COOKIE_DOMAIN)
                 .maxAge(0)
                 .build();
 
@@ -163,6 +171,7 @@ public class IamServiceImpl implements IamService {
                     .sameSite("None")
                     .secure(true)
                     .path("/")
+                    .domain(COOKIE_DOMAIN)
                     .maxAge(60 * 15)
                     .build();
 

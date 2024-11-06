@@ -25,7 +25,7 @@ public class ModuleConfig {
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://localhost:5173")
+                        .allowedOrigins("https://localhost:5173", "https://thekadazandusundictionary.com")
                         .allowCredentials(true)
                         .allowedHeaders("*")
                         .allowedMethods("GET", "POST", "PUT", "DELETE");
