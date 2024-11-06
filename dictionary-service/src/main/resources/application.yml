@@ -23,7 +23,7 @@ server:
 
 feign:
   iam-service:
-    url: https://iam-service-210633814475.us-central1.run.app/api
+    url: ${IAM_SERVICE_URL}
 
 security:
   internal-request:
