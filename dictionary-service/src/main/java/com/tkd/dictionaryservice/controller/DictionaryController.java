@@ -3,6 +3,7 @@ package com.tkd.dictionaryservice.controller;
 import com.tkd.apis.DictV1Api;
 import com.tkd.dictionaryservice.service.DictionaryService;
 import com.tkd.dictionaryservice.utility.DictionaryServiceUtility;
+import com.tkd.models.ReportRequest;
 import com.tkd.models.WordModel;
 import feign.FeignException;
 import jakarta.servlet.http.Cookie;
@@ -119,6 +120,33 @@ public class DictionaryController implements DictV1Api {
             return ResponseEntity.ok().build();
 
         return ResponseEntity.internalServerError().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> reportContribution(ReportRequest body) {
+        HttpServletRequest request = getRequest().orElseThrow(() -> new RuntimeException("request is null"));
+
+        Cookie[] cookies = request.getCookies();
+        Cookie tokenCookie = null;
+        for (Cookie cookie : cookies)
+            if (cookie.getName().equals(DictionaryServiceUtility.TOKEN_COOKIE_KEY))
+                tokenCookie = cookie;
+
+        if (tokenCookie == null) {
+            log.error("No token cookie passed adding new word");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        ResponseCookie responseCookie = ResponseCookie.from(tokenCookie.getName(), tokenCookie.getValue())
+                .httpOnly(tokenCookie.isHttpOnly())
+                .sameSite("None")
+                .secure(tokenCookie.getSecure())
+                .path(tokenCookie.getPath())
+                .maxAge(tokenCookie.getMaxAge())
+                .build();
+
+        dictionaryService.reportContribution(body, responseCookie.toString());
+        return ResponseEntity.ok().build();
     }
 
     @Override

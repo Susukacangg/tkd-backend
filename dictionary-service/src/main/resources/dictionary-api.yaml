@@ -168,6 +168,22 @@ paths:
             application/json:
               schema:
                 type: object
+  /report-contribution:
+    post:
+      tags:
+        - DictV1
+      operationId: reportContribution
+      summary: add record to indicate contribution is reported
+      requestBody:
+        description: body containing report information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+      responses:
+        "200":
+          description: status to indicate report was successful
 
 components:
   schemas:
@@ -203,4 +219,15 @@ components:
         example:
           type: string
         exampleTranslation:
+          type: string
+    ReportRequest:
+      type: object
+      properties:
+        wordId:
+          type: number
+        reportedBy:
+          type: string
+        reportType:
+          type: string
+        reportDescription:
           type: string
