@@ -1,6 +1,7 @@
 package com.tkd.dictionaryservice.service;
 
 
+import com.tkd.models.ReportRequest;
 import com.tkd.models.WordModel;
 import feign.FeignException;
 import org.springframework.data.domain.Page;
@@ -24,4 +25,6 @@ public interface DictionaryService {
     Integer editWord(WordModel editedWord);
 
     Boolean deleteWord(BigDecimal wordId);
+
+    void reportContribution(ReportRequest reportRequest, String tokenCookieString);
 }

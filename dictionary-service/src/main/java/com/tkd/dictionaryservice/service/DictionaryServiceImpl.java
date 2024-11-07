@@ -1,14 +1,17 @@
 package com.tkd.dictionaryservice.service;
 
 import com.tkd.dictionaryservice.dto.UserViewDto;
+import com.tkd.dictionaryservice.entity.ContributionReportEntity;
 import com.tkd.dictionaryservice.entity.TranslationEntity;
 import com.tkd.dictionaryservice.entity.UsageExampleEntity;
 import com.tkd.dictionaryservice.entity.WordEntity;
 import com.tkd.dictionaryservice.feign.IamFeignService;
+import com.tkd.dictionaryservice.repository.ContributionReportDao;
 import com.tkd.dictionaryservice.repository.DictionaryExampleDao;
 import com.tkd.dictionaryservice.repository.DictionaryTranslationDao;
 import com.tkd.dictionaryservice.repository.DictionaryWordDao;
 import com.tkd.dictionaryservice.utility.DictionaryServiceUtility;
+import com.tkd.models.ReportRequest;
 import com.tkd.models.WordModel;
 import com.tkd.models.TranslationModel;
 import com.tkd.models.UsageExampleModel;
@@ -23,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -35,6 +39,7 @@ public class DictionaryServiceImpl implements DictionaryService {
     private final DictionaryWordDao dictionaryWordDao;
     private final DictionaryTranslationDao dictionaryTranslationDao;
     private final DictionaryExampleDao dictionaryExampleDao;
+    private final ContributionReportDao contributionReportDao;
 
     private static final int PAGE_SIZE = 10;
 
@@ -262,5 +267,21 @@ public class DictionaryServiceImpl implements DictionaryService {
         }
 
         return isDeleteSuccess;
+    }
+
+    @Override
+    public void reportContribution(ReportRequest reportRequest, String tokenCookieString) {
+        UserViewDto userViewDto = iamFeignService.getUserDetails(tokenCookieString);
+
+        ContributionReportEntity reportEntity = ContributionReportEntity.builder()
+                .wordId(reportRequest.getWordId().longValue())
+                .userId(userViewDto.getId().longValue())
+                .reportType(reportRequest.getReportType())
+                .reportDescription(reportRequest.getReportDescription())
+                .reportDate(LocalDateTime.now())
+                .status("PENDING")
+                .build();
+
+        contributionReportDao.save(reportEntity);
     }
 }
