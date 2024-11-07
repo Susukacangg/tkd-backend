@@ -166,6 +166,26 @@ public class IamController implements IamV1Api {
     }
 
     @Override
+    public ResponseEntity<Boolean> adminCheck() {
+        Optional<HttpServletRequest> requestOptional = getRequest();
+
+        // don't have http request
+        if(requestOptional.isEmpty())
+            return ResponseEntity.internalServerError().body(null);
+
+        HttpServletRequest request = requestOptional.get();
+        Cookie[] cookies = request.getCookies();
+
+        // find for the refresh token cookie
+        Cookie tokenCookie = null;
+        for (Cookie cookie : cookies)
+            if(cookie.getName().equals(IamServiceUtility.TOKEN_COOKIE_KEY))
+                tokenCookie = cookie;
+
+        return ResponseEntity.ok(iamService.adminCheck(Objects.requireNonNull(tokenCookie).getValue()));
+    }
+
+    @Override
     public Optional<HttpServletRequest> getRequest() {
         return Optional.of(
                 ((ServletRequestAttributes)

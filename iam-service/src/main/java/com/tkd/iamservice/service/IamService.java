@@ -26,4 +26,6 @@ public interface IamService {
     UserView getUserDetails(String token, boolean includeId) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException;
 
     IamUserData getIamUserDetails(String loginId) throws UsernameNotFoundException;
+
+    Boolean adminCheck(String token);
 }

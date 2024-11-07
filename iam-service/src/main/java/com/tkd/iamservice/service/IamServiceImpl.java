@@ -24,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Optional;
 
 @Slf4j
@@ -49,7 +50,9 @@ public class IamServiceImpl implements IamService {
 
         IamUserEntity savedUser = userDao.save(newUser); // throws exception if got duplicates
         if(savedUser.getId() > 0) {
-            String token = jwtService.generateToken(savedUser);
+            HashMap<String, Object> extraClaims = new HashMap<>();
+            extraClaims.put("role", savedUser.getRole());
+            String token = jwtService.generateToken(extraClaims, savedUser);
             String refreshToken = jwtService.generateRefreshToken(savedUser);
 
             ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, token)
@@ -87,7 +90,9 @@ public class IamServiceImpl implements IamService {
                 loginReq.getLogin(), loginReq.getPassword()
         ));
 
-        String token = jwtService.generateToken(userDetails);
+        HashMap<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("role", userDetails.getRole());
+        String token = jwtService.generateToken(extraClaims, userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         // set cookies
@@ -157,7 +162,9 @@ public class IamServiceImpl implements IamService {
         AuthResponseDto refreshResponse = AuthResponseDto.builder().build();
         String token;
         if (jwtService.isTokenValid(currRefreshToken, userDetails)) {
-            token = jwtService.generateToken(userDetails);
+            HashMap<String, Object> extraClaims = new HashMap<>();
+            extraClaims.put("role", userDetails.getRole());
+            token = jwtService.generateToken(extraClaims, userDetails);
 
             ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, token)
                     .httpOnly(true)
@@ -210,5 +217,10 @@ public class IamServiceImpl implements IamService {
         iamUserData.setRole(userDetails.getRole().toString());
 
         return iamUserData;
+    }
+
+    @Override
+    public Boolean adminCheck(String token) {
+        return jwtService.extractRole(token).equals("ADMIN");
     }
 }

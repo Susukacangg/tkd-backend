@@ -24,6 +24,7 @@ public class SecurityConfig {
 
     private final String[] URL_BLACKLIST = {
             "/user/details",
+            "/admin/check"
     };
 
     private final String[] URL_BLACKLIST_ALL = {
