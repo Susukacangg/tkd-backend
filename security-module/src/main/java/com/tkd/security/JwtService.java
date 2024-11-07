@@ -59,6 +59,18 @@ public class JwtService {
         }
     }
 
+    public String extractRole(String jwtToken) throws IllegalArgumentException, AccountExpiredException {
+        try {
+            return extractAllClaims(jwtToken).get("role", String.class);
+        } catch (MalformedJwtException e) {
+            log.error(e.getMessage());
+            throw new IllegalArgumentException(String.format("Invalid JWT token: %s", jwtToken));
+        } catch (ExpiredJwtException e) {
+            log.error(e.getMessage());
+            throw new AccountExpiredException(String.format("Expired JWT token: %s", jwtToken));
+        }
+    }
+
     public <T> T extractClaim(String jwtToken, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(jwtToken);
         return claimsResolver.apply(claims);
