@@ -159,6 +159,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/IamUserData"
+  /admin/check:
+    get:
+      tags:
+        - IamV1
+      operationId: adminCheck
+      summary: Check if user is ADMIN
+      responses:
+        "200":
+          description: boolean to indicate whether user is admin
+          content:
+            application/json:
+              schema:
+                type: boolean
 
 components:
   schemas:
