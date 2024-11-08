@@ -138,21 +138,18 @@ public class IamController implements IamV1Api {
         HttpServletRequest request = requestOptional.get();
         Cookie[] cookies = request.getCookies();
         Cookie tokenCookie = null;
-        for(Cookie cookie : cookies)
-            if(cookie.getName().equals(IamServiceUtility.TOKEN_COOKIE_KEY))
-                tokenCookie = cookie;
+
+        if(cookies != null)
+            for(Cookie cookie : cookies)
+                if(cookie.getName().equals(IamServiceUtility.TOKEN_COOKIE_KEY))
+                    tokenCookie = cookie;
 
         if(tokenCookie == null) {
             log.error("No token cookie passed");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            return ResponseEntity.ok(null);
         }
 
-        try {
-            return ResponseEntity.ok(iamService.getUserDetails(tokenCookie.getValue(), includeId));
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
+        return ResponseEntity.ok(iamService.getUserDetails(tokenCookie.getValue(), includeId));
     }
 
     @Override
@@ -175,14 +172,18 @@ public class IamController implements IamV1Api {
 
         HttpServletRequest request = requestOptional.get();
         Cookie[] cookies = request.getCookies();
-
-        // find for the refresh token cookie
         Cookie tokenCookie = null;
-        for (Cookie cookie : cookies)
-            if(cookie.getName().equals(IamServiceUtility.TOKEN_COOKIE_KEY))
-                tokenCookie = cookie;
 
-        return ResponseEntity.ok(iamService.adminCheck(Objects.requireNonNull(tokenCookie).getValue()));
+        if(cookies != null)
+            for (Cookie cookie : cookies)
+                if(cookie.getName().equals(IamServiceUtility.TOKEN_COOKIE_KEY))
+                    tokenCookie = cookie;
+
+        String tokenCookieValue = "";
+        if(tokenCookie != null)
+            tokenCookieValue = tokenCookie.getValue();
+
+        return ResponseEntity.ok(iamService.adminCheck(tokenCookieValue));
     }
 
     @Override
