@@ -201,11 +201,14 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public UserView getUserDetails(String token, boolean includeId) throws UsernameNotFoundException, IllegalArgumentException, AccountExpiredException {
+    public UserView getUserDetails(String token, boolean includeId) {
         String username = jwtService.extractUsername(token);
 
         IamUserEntity userDetails = userDao.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(String.format("Get user details: username %s not found!", username)));
+                .orElse(null);
+
+        if(userDetails == null)
+            return null;
 
         UserView userView = new UserView();
         userView.setUsername(userDetails.getUsername());
@@ -230,6 +233,9 @@ public class IamServiceImpl implements IamService {
 
     @Override
     public Boolean adminCheck(String token) {
+        if(token.isEmpty())
+            return false;
+
         return jwtService.extractRole(token).equals("ADMIN");
     }
 }
