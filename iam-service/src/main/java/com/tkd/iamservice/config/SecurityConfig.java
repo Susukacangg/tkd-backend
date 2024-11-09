@@ -23,7 +23,9 @@ public class SecurityConfig {
     private final AuthenticationProvider authProvider;
 
     private final String[] URL_BLACKLIST = {
-            "/auth/logout"
+            "/auth/logout",
+            "/user/details",
+            "/admin/check"
     };
 
     private final String[] URL_BLACKLIST_ALL = {
