@@ -261,6 +261,11 @@ public class DictionaryServiceImpl implements DictionaryService {
             if (!usageExampleEntities.isEmpty())
                 dictionaryExampleDao.deleteAll(usageExampleEntities);
 
+            List<ContributionReportEntity> reports = contributionReportDao.findReportEntitiesByWordId(wordId.longValue());
+            log.info(reports.toString());
+            if (!reports.isEmpty())
+                contributionReportDao.deleteAll(reports);
+
             isDeleteSuccess = true;
         } catch (Exception e) {
             isDeleteSuccess = false;
