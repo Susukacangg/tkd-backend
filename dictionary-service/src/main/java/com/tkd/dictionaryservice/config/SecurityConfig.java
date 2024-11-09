@@ -24,6 +24,7 @@ public class SecurityConfig {
     private final String[] URL_BLACKLIST = {
             "/dict/add",
             "/dict/get-users-words",
+            "/report-contribution"
     };
 
     private final String[] URL_BLACKLIST_ALL = {
