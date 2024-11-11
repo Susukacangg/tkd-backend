@@ -59,7 +59,7 @@ public class IamServiceImpl implements IamService {
 
             ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, token)
                     .httpOnly(true)
-                    .sameSite("None")
+                    .sameSite("Lax")
                     .secure(true)
                     .path("/")
                     .domain(COOKIE_DOMAIN)
@@ -68,7 +68,7 @@ public class IamServiceImpl implements IamService {
 
             ResponseCookie refreshCookie = ResponseCookie.from(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY, refreshToken)
                     .httpOnly(true)
-                    .sameSite("None")
+                    .sameSite("Lax")
                     .secure(true)
                     .path("/")
                     .domain(COOKIE_DOMAIN)
@@ -102,7 +102,7 @@ public class IamServiceImpl implements IamService {
         // set cookies
         ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, token)
                 .httpOnly(true)
-                .sameSite("None")
+                .sameSite("Lax")
                 .secure(true)
                 .path("/")
                 .domain(COOKIE_DOMAIN)
@@ -111,7 +111,7 @@ public class IamServiceImpl implements IamService {
 
         ResponseCookie refreshCookie = ResponseCookie.from(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY, refreshToken)
                 .httpOnly(true)
-                .sameSite("None")
+                .sameSite("Lax")
                 .secure(true)
                 .path("/")
                 .domain(COOKIE_DOMAIN)
@@ -130,7 +130,7 @@ public class IamServiceImpl implements IamService {
     public AuthResponseDto logoutUser() {
         ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, "")
                 .httpOnly(true)
-                .sameSite("None")
+                .sameSite("Lax")
                 .secure(true)
                 .path("/")
                 .domain(COOKIE_DOMAIN)
@@ -139,7 +139,7 @@ public class IamServiceImpl implements IamService {
 
         ResponseCookie refreshCookie = ResponseCookie.from(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY, "")
                 .httpOnly(true)
-                .sameSite("None")
+                .sameSite("Lax")
                 .secure(true)
                 .path("/")
                 .domain(COOKIE_DOMAIN)
@@ -176,7 +176,7 @@ public class IamServiceImpl implements IamService {
 
             ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, token)
                     .httpOnly(true)
-                    .sameSite("None")
+                    .sameSite("Lax")
                     .secure(true)
                     .path("/")
                     .domain(COOKIE_DOMAIN)

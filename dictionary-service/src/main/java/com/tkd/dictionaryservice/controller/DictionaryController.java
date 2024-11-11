@@ -44,7 +44,7 @@ public class DictionaryController implements DictV1Api {
 
         ResponseCookie responseCookie = ResponseCookie.from(tokenCookie.getName(), tokenCookie.getValue())
                 .httpOnly(tokenCookie.isHttpOnly())
-                .sameSite("None")
+                .sameSite("Lax")
                 .secure(tokenCookie.getSecure())
                 .path(tokenCookie.getPath())
                 .maxAge(tokenCookie.getMaxAge())
@@ -99,7 +99,7 @@ public class DictionaryController implements DictV1Api {
 
         ResponseCookie responseCookie = ResponseCookie.from(tokenCookie.getName(), tokenCookie.getValue())
                 .httpOnly(tokenCookie.isHttpOnly())
-                .sameSite("None")
+                .sameSite("Lax")
                 .secure(tokenCookie.getSecure())
                 .path(tokenCookie.getPath())
                 .maxAge(tokenCookie.getMaxAge())
@@ -139,7 +139,7 @@ public class DictionaryController implements DictV1Api {
 
         ResponseCookie responseCookie = ResponseCookie.from(tokenCookie.getName(), tokenCookie.getValue())
                 .httpOnly(tokenCookie.isHttpOnly())
-                .sameSite("None")
+                .sameSite("Lax")
                 .secure(tokenCookie.getSecure())
                 .path(tokenCookie.getPath())
                 .maxAge(tokenCookie.getMaxAge())
