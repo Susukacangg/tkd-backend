@@ -17,13 +17,13 @@ spring:
     database: postgresql
 
 server:
-  port: ${PORT:8080}
+  port: 8082
   servlet:
     context-path: /api
 
 feign:
   iam-service:
-    url: localhost:8081/api
+    url: http://localhost:8081/api
 
 security:
   internal-request:
