@@ -15,6 +15,13 @@ paths:
         - IamV1
       operationId: registerUser
       summary: Register user into database and return token
+      parameters:
+        - in: header
+          name: X-XSRF-TOKEN
+          schema:
+            type: string
+          required: true
+          description: csrf token
       requestBody:
         description: The user information
         required: true
@@ -35,6 +42,13 @@ paths:
         - IamV1
       operationId: loginUser
       summary: Authenticate and authorize user. Return tokens.
+      parameters:
+        - in: header
+          name: X-XSRF-TOKEN
+          schema:
+            type: string
+          required: true
+          description: csrf token
       requestBody:
         description: Login information
         required: true
@@ -55,6 +69,13 @@ paths:
         - IamV1
       operationId: logoutUser
       summary: Logout user.
+      parameters:
+        - in: header
+          name: X-XSRF-TOKEN
+          schema:
+            type: string
+          required: true
+          description: csrf token
       responses:
         "200":
           description: Response message after logout
@@ -168,6 +189,28 @@ paths:
       responses:
         "200":
           description: boolean to indicate whether user is admin
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /auth/csrf:
+    get:
+      tags:
+        - IamV1
+      operationId: issueCsrfToken
+      summary: Issue a csrfToken
+      responses:
+        "200":
+          description: issue a cookie for csrf token
+  /auth/verify:
+    get:
+      tags:
+        - IamV1
+      operationId: checkIsUserAuthenticated
+      summary: Check if the user is authenticated based on their access token
+      responses:
+        "200":
+          description: send a boolean to check if the user is already logged in
           content:
             application/json:
               schema:

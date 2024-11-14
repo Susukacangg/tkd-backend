@@ -1,5 +1,6 @@
 package com.tkd.dictionaryservice.config;
 
+import com.tkd.security.CsrfAuthFilter;
 import com.tkd.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authProvider;
+    private final CsrfAuthFilter csrfAuthFilter;
 
     private final String[] URL_BLACKLIST = {
             "/dict/add",
@@ -45,7 +47,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authProvider)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(csrfAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

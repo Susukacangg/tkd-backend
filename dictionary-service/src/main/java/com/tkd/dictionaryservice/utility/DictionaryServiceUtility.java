@@ -3,14 +3,15 @@ package com.tkd.dictionaryservice.utility;
 import com.tkd.models.TranslationModel;
 import com.tkd.models.UsageExampleModel;
 import com.tkd.models.WordModel;
+import com.tkd.security.SecurityUtility;
 import jakarta.persistence.Tuple;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 
 public class DictionaryServiceUtility {
-    public static final String TOKEN_COOKIE_KEY = "token";
-
     public static WordModel tupleToWordModel(Tuple tuple) {
         WordModel wordModel = new WordModel();
         wordModel.setUsername(tuple.get("username").toString());
@@ -53,5 +54,16 @@ public class DictionaryServiceUtility {
         );
 
         return wordModel;
+    }
+
+    public static Cookie getAccessTokenCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        Cookie accessTokenCookie = null;
+        if (cookies != null)
+            for (Cookie cookie : cookies)
+                if (cookie.getName().equals(SecurityUtility.TOKEN_COOKIE_KEY))
+                    accessTokenCookie = cookie;
+
+        return accessTokenCookie;
     }
 }

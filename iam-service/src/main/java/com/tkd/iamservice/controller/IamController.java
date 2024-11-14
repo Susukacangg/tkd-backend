@@ -8,11 +8,13 @@ import com.tkd.models.IamUserData;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
 import com.tkd.models.UserView;
+import com.tkd.security.SecurityUtility;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,6 +24,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,7 +33,7 @@ public class IamController implements IamV1Api {
     private final IamService iamService;
 
     @Override
-    public ResponseEntity<String> registerUser(RegistrationRequest body) {
+    public ResponseEntity<String> registerUser(String xXsrfToken, RegistrationRequest body) {
         AuthResponseDto registerResponse = AuthResponseDto.builder().build();
 
         try {
@@ -46,7 +49,7 @@ public class IamController implements IamV1Api {
     }
 
     @Override
-    public ResponseEntity<String> loginUser(LoginRequest body) {
+    public ResponseEntity<String> loginUser(String xXsrfToken, LoginRequest body) {
         AuthResponseDto loginResponse = AuthResponseDto.builder().build();
         try {
             loginResponse = iamService.loginUser(body);
@@ -64,7 +67,7 @@ public class IamController implements IamV1Api {
     }
 
     @Override
-    public ResponseEntity<String> logoutUser() {
+    public ResponseEntity<String> logoutUser(String xXsrfToken) {
         AuthResponseDto logoutResponse = iamService.logoutUser();
 
         return ResponseEntity.ok()
@@ -86,7 +89,6 @@ public class IamController implements IamV1Api {
         AuthResponseDto refreshResponse = AuthResponseDto.builder().build();
         refreshResponse.setMessage("Refresh token error");
 
-        // NO COOKIES, should not be calling in the first place
         // check for cookies because endpoint doesn't need authorization
         if(cookies == null) {
             log.error("No cookie passed");
@@ -94,10 +96,7 @@ public class IamController implements IamV1Api {
         }
 
         // find for the refresh token cookie
-        Cookie refreshTokenCookie = null;
-        for (Cookie cookie : cookies)
-            if(cookie.getName().equals(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY))
-                refreshTokenCookie = cookie;
+        Cookie refreshTokenCookie = IamServiceUtility.getRefreshTokenCookie(request);
 
         // NO REFRESH TOKEN
         if(refreshTokenCookie == null) {
@@ -136,13 +135,7 @@ public class IamController implements IamV1Api {
             return ResponseEntity.internalServerError().body(null);
 
         HttpServletRequest request = requestOptional.get();
-        Cookie[] cookies = request.getCookies();
-        Cookie tokenCookie = null;
-
-        if(cookies != null)
-            for(Cookie cookie : cookies)
-                if(cookie.getName().equals(IamServiceUtility.TOKEN_COOKIE_KEY))
-                    tokenCookie = cookie;
+        Cookie tokenCookie = IamServiceUtility.getAccessTokenCookie(request);
 
         if(tokenCookie == null) {
             log.error("No token cookie passed");
@@ -171,19 +164,44 @@ public class IamController implements IamV1Api {
             return ResponseEntity.internalServerError().body(null);
 
         HttpServletRequest request = requestOptional.get();
-        Cookie[] cookies = request.getCookies();
-        Cookie tokenCookie = null;
-
-        if(cookies != null)
-            for (Cookie cookie : cookies)
-                if(cookie.getName().equals(IamServiceUtility.TOKEN_COOKIE_KEY))
-                    tokenCookie = cookie;
+        Cookie tokenCookie = IamServiceUtility.getAccessTokenCookie(request);
 
         String tokenCookieValue = "";
         if(tokenCookie != null)
             tokenCookieValue = tokenCookie.getValue();
 
         return ResponseEntity.ok(iamService.adminCheck(tokenCookieValue));
+    }
+
+    @Override
+    public ResponseEntity<Void> issueCsrfToken() {
+        String csrfToken = UUID.randomUUID().toString();
+
+        ResponseCookie responseCookie = ResponseCookie.from(SecurityUtility.CSRF_TOKEN_COOKIE_KEY, csrfToken)
+                .httpOnly(false)
+                .sameSite("None")
+                .secure(true)
+                .path("/")
+                .maxAge(60 * 15)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
+                .build();
+    }
+
+    @Override
+    public ResponseEntity<Boolean> checkIsUserAuthenticated() {
+        Optional<HttpServletRequest> requestOptional = getRequest();
+
+        // don't have http request
+        if(requestOptional.isEmpty())
+            return ResponseEntity.internalServerError().body(null);
+
+        HttpServletRequest request = requestOptional.get();
+        Cookie refreshTokenCookie = IamServiceUtility.getRefreshTokenCookie(request);
+
+        return ResponseEntity.ok(refreshTokenCookie != null);
     }
 
     @Override
