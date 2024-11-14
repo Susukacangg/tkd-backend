@@ -1,5 +1,6 @@
 package com.tkd.iamservice.config;
 
+import com.tkd.security.CsrfAuthFilter;
 import com.tkd.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +22,7 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final InternalRequestFilter internalRequestFilter;
     private final AuthenticationProvider authProvider;
+    private final CsrfAuthFilter csrfAuthFilter;
 
     private final String[] URL_BLACKLIST = {
             "/auth/logout",
@@ -45,7 +47,8 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(internalRequestFilter, JwtAuthFilter.class);
+                .addFilterBefore(internalRequestFilter, JwtAuthFilter.class)
+                .addFilterAfter(csrfAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

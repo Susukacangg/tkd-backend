@@ -4,13 +4,13 @@ import com.tkd.iamservice.dto.AuthResponseDto;
 import com.tkd.iamservice.entity.IamUserEntity;
 import com.tkd.iamservice.entity.UserRole;
 import com.tkd.iamservice.repository.UserDao;
-import com.tkd.iamservice.utility.IamServiceUtility;
 import com.tkd.models.IamUserData;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
 
 import com.tkd.models.UserView;
 import com.tkd.security.JwtService;
+import com.tkd.security.SecurityUtility;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +57,7 @@ public class IamServiceImpl implements IamService {
             String token = jwtService.generateToken(extraClaims, savedUser);
             String refreshToken = jwtService.generateRefreshToken(savedUser);
 
-            ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, token)
+            ResponseCookie tokenCookie = ResponseCookie.from(SecurityUtility.TOKEN_COOKIE_KEY, token)
                     .httpOnly(true)
                     .sameSite("Lax")
                     .secure(true)
@@ -66,7 +66,7 @@ public class IamServiceImpl implements IamService {
                     .maxAge(60 * 15)
                     .build();
 
-            ResponseCookie refreshCookie = ResponseCookie.from(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY, refreshToken)
+            ResponseCookie refreshCookie = ResponseCookie.from(SecurityUtility.REFRESH_TOKEN_COOKIE_KEY, refreshToken)
                     .httpOnly(true)
                     .sameSite("Lax")
                     .secure(true)
@@ -100,7 +100,7 @@ public class IamServiceImpl implements IamService {
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         // set cookies
-        ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, token)
+        ResponseCookie tokenCookie = ResponseCookie.from(SecurityUtility.TOKEN_COOKIE_KEY, token)
                 .httpOnly(true)
                 .sameSite("Lax")
                 .secure(true)
@@ -109,7 +109,7 @@ public class IamServiceImpl implements IamService {
                 .maxAge(60 * 15)
                 .build();
 
-        ResponseCookie refreshCookie = ResponseCookie.from(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY, refreshToken)
+        ResponseCookie refreshCookie = ResponseCookie.from(SecurityUtility.REFRESH_TOKEN_COOKIE_KEY, refreshToken)
                 .httpOnly(true)
                 .sameSite("Lax")
                 .secure(true)
@@ -128,7 +128,7 @@ public class IamServiceImpl implements IamService {
 
     @Override
     public AuthResponseDto logoutUser() {
-        ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, "")
+        ResponseCookie tokenCookie = ResponseCookie.from(SecurityUtility.TOKEN_COOKIE_KEY, "")
                 .httpOnly(true)
                 .sameSite("Lax")
                 .secure(true)
@@ -137,7 +137,7 @@ public class IamServiceImpl implements IamService {
                 .maxAge(0)
                 .build();
 
-        ResponseCookie refreshCookie = ResponseCookie.from(IamServiceUtility.REFRESH_TOKEN_COOKIE_KEY, "")
+        ResponseCookie refreshCookie = ResponseCookie.from(SecurityUtility.REFRESH_TOKEN_COOKIE_KEY, "")
                 .httpOnly(true)
                 .sameSite("Lax")
                 .secure(true)
@@ -174,7 +174,7 @@ public class IamServiceImpl implements IamService {
             extraClaims.put("role", userDetails.getRole());
             token = jwtService.generateToken(extraClaims, userDetails);
 
-            ResponseCookie tokenCookie = ResponseCookie.from(IamServiceUtility.TOKEN_COOKIE_KEY, token)
+            ResponseCookie tokenCookie = ResponseCookie.from(SecurityUtility.TOKEN_COOKIE_KEY, token)
                     .httpOnly(true)
                     .sameSite("Lax")
                     .secure(true)

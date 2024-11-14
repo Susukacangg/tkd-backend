@@ -28,14 +28,10 @@ public class DictionaryController implements DictV1Api {
     private final DictionaryService dictionaryService;
 
     @Override
-    public ResponseEntity<BigDecimal> addToDictionary(WordModel newWord) {
+    public ResponseEntity<BigDecimal> addToDictionary(String xXsrfToken, WordModel newWord) {
         HttpServletRequest request = getRequest().orElseThrow(() -> new RuntimeException("request is null"));
 
-        Cookie[] cookies = request.getCookies();
-        Cookie tokenCookie = null;
-        for (Cookie cookie : cookies)
-            if (cookie.getName().equals(DictionaryServiceUtility.TOKEN_COOKIE_KEY))
-                tokenCookie = cookie;
+        Cookie tokenCookie = DictionaryServiceUtility.getAccessTokenCookie(request);
 
         if (tokenCookie == null) {
             log.error("No token cookie passed adding new word");
@@ -68,7 +64,7 @@ public class DictionaryController implements DictV1Api {
     }
 
     @Override
-    public ResponseEntity<Integer> editWord(WordModel body) {
+    public ResponseEntity<Integer> editWord(String xXsrfToken, WordModel body) {
         return ResponseEntity.ok(dictionaryService.editWord(body));
     }
 
@@ -86,11 +82,7 @@ public class DictionaryController implements DictV1Api {
     public ResponseEntity<Object> getAllUserWords(Integer pageNum) {
         HttpServletRequest request = getRequest().orElseThrow(() -> new RuntimeException("request is null"));
 
-        Cookie[] cookies = request.getCookies();
-        Cookie tokenCookie = null;
-        for (Cookie cookie : cookies)
-            if (cookie.getName().equals(DictionaryServiceUtility.TOKEN_COOKIE_KEY))
-                tokenCookie = cookie;
+        Cookie tokenCookie = DictionaryServiceUtility.getAccessTokenCookie(request);
 
         if (tokenCookie == null) {
             log.error("No token cookie passed adding new word");
@@ -115,7 +107,7 @@ public class DictionaryController implements DictV1Api {
     }
 
     @Override
-    public ResponseEntity<Void> deleteWord(BigDecimal wordId) {
+    public ResponseEntity<Void> deleteWord(BigDecimal wordId, String xXsrfToken) {
         if(dictionaryService.deleteWord(wordId))
             return ResponseEntity.ok().build();
 
@@ -123,14 +115,10 @@ public class DictionaryController implements DictV1Api {
     }
 
     @Override
-    public ResponseEntity<Void> reportContribution(ReportRequest body) {
+    public ResponseEntity<Void> reportContribution(String xXsrfToken, ReportRequest body) {
         HttpServletRequest request = getRequest().orElseThrow(() -> new RuntimeException("request is null"));
 
-        Cookie[] cookies = request.getCookies();
-        Cookie tokenCookie = null;
-        for (Cookie cookie : cookies)
-            if (cookie.getName().equals(DictionaryServiceUtility.TOKEN_COOKIE_KEY))
-                tokenCookie = cookie;
+        Cookie tokenCookie = DictionaryServiceUtility.getAccessTokenCookie(request);
 
         if (tokenCookie == null) {
             log.error("No token cookie passed adding new word");
