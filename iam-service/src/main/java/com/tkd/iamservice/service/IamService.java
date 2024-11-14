@@ -6,6 +6,7 @@ import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
 import com.tkd.models.UserView;
 import jakarta.servlet.http.Cookie;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,4 +29,6 @@ public interface IamService {
     IamUserData getIamUserDetails(String loginId) throws UsernameNotFoundException;
 
     Boolean adminCheck(String token);
+
+    ResponseCookie generateCsrfCookie();
 }

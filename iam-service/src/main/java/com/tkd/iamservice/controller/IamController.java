@@ -8,7 +8,6 @@ import com.tkd.models.IamUserData;
 import com.tkd.models.LoginRequest;
 import com.tkd.models.RegistrationRequest;
 import com.tkd.models.UserView;
-import com.tkd.security.SecurityUtility;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -175,15 +173,7 @@ public class IamController implements IamV1Api {
 
     @Override
     public ResponseEntity<Void> issueCsrfToken() {
-        String csrfToken = UUID.randomUUID().toString();
-
-        ResponseCookie responseCookie = ResponseCookie.from(SecurityUtility.CSRF_TOKEN_COOKIE_KEY, csrfToken)
-                .httpOnly(false)
-                .sameSite("None")
-                .secure(true)
-                .path("/")
-                .maxAge(60 * 15)
-                .build();
+        ResponseCookie responseCookie = iamService.generateCsrfCookie();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, responseCookie.toString())

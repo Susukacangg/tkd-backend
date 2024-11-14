@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -237,5 +238,19 @@ public class IamServiceImpl implements IamService {
             return false;
 
         return jwtService.extractRole(token).equals("ADMIN");
+    }
+
+    @Override
+    public ResponseCookie generateCsrfCookie() {
+        String csrfToken = UUID.randomUUID().toString();
+
+        return ResponseCookie.from(SecurityUtility.CSRF_TOKEN_COOKIE_KEY, csrfToken)
+                .httpOnly(false)
+                .sameSite("Lax")
+                .secure(true)
+                .path("/")
+                .domain(COOKIE_DOMAIN)
+                .maxAge(60 * 15)
+                .build();
     }
 }
