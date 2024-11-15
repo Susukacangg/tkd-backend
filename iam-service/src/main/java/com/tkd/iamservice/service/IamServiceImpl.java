@@ -229,4 +229,18 @@ public class IamServiceImpl implements IamService {
 
         return jwtService.extractRole(token).equals("ADMIN");
     }
+
+    @Override
+    public UserView getUser(Long userId) {
+        UserView userView = null;
+
+        IamUserEntity userEntity = userDao.findByIdEquals(userId).orElse(null);
+
+        if (userEntity != null) {
+            userView = new UserView();
+            userView.setUsername(userEntity.getUsername());
+        }
+
+        return userView;
+    }
 }

@@ -28,4 +28,6 @@ public interface IamService {
     IamUserData getIamUserDetails(String loginId) throws UsernameNotFoundException;
 
     Boolean adminCheck(String token);
+
+    UserView getUser(Long userId);
 }

@@ -215,6 +215,26 @@ paths:
             application/json:
               schema:
                 type: boolean
+  /user/{userId}:
+    get:
+      tags:
+        - IamV1
+      operationId: getUser
+      summary: get user based on user ID
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: number
+          required: true
+          description: user ID to use in search
+      responses:
+        "200":
+          description: details of the found user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserView"
 
 components:
   schemas:

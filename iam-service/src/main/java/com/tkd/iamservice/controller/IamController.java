@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -202,6 +203,11 @@ public class IamController implements IamV1Api {
         Cookie refreshTokenCookie = IamServiceUtility.getRefreshTokenCookie(request);
 
         return ResponseEntity.ok(refreshTokenCookie != null);
+    }
+
+    @Override
+    public ResponseEntity<UserView> getUser(BigDecimal userId) {
+        return ResponseEntity.ok(iamService.getUser(userId.longValue()));
     }
 
     @Override
