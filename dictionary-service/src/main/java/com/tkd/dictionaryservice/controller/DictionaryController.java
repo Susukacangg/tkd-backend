@@ -3,6 +3,8 @@ package com.tkd.dictionaryservice.controller;
 import com.tkd.apis.DictV1Api;
 import com.tkd.dictionaryservice.service.DictionaryService;
 import com.tkd.dictionaryservice.utility.DictionaryServiceUtility;
+import com.tkd.models.ContributionCommentRequest;
+import com.tkd.models.ReportContributionCommentRequest;
 import com.tkd.models.ReportRequest;
 import com.tkd.models.WordModel;
 import feign.FeignException;
@@ -42,6 +44,7 @@ public class DictionaryController implements DictV1Api {
                 .httpOnly(tokenCookie.isHttpOnly())
                 .sameSite("Lax")
                 .secure(tokenCookie.getSecure())
+                .domain(tokenCookie.getDomain())
                 .path(tokenCookie.getPath())
                 .maxAge(tokenCookie.getMaxAge())
                 .build();
@@ -93,6 +96,7 @@ public class DictionaryController implements DictV1Api {
                 .httpOnly(tokenCookie.isHttpOnly())
                 .sameSite("Lax")
                 .secure(tokenCookie.getSecure())
+                .domain(tokenCookie.getDomain())
                 .path(tokenCookie.getPath())
                 .maxAge(tokenCookie.getMaxAge())
                 .build();
@@ -129,12 +133,85 @@ public class DictionaryController implements DictV1Api {
                 .httpOnly(tokenCookie.isHttpOnly())
                 .sameSite("Lax")
                 .secure(tokenCookie.getSecure())
+                .domain(tokenCookie.getDomain())
                 .path(tokenCookie.getPath())
                 .maxAge(tokenCookie.getMaxAge())
                 .build();
 
         dictionaryService.reportContribution(body, responseCookie.toString());
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<String> addContributionComment(String xXsrfToken, ContributionCommentRequest commentRequest) {
+        HttpServletRequest request = getRequest().orElseThrow(() -> new RuntimeException("request is null"));
+
+        Cookie tokenCookie = DictionaryServiceUtility.getAccessTokenCookie(request);
+
+        if (tokenCookie == null) {
+            log.error("No token cookie passed adding new word");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        ResponseCookie responseCookie = ResponseCookie.from(tokenCookie.getName(), tokenCookie.getValue())
+                .httpOnly(tokenCookie.isHttpOnly())
+                .sameSite("Lax")
+                .secure(tokenCookie.getSecure())
+                .domain(tokenCookie.getDomain())
+                .path(tokenCookie.getPath())
+                .maxAge(tokenCookie.getMaxAge())
+                .build();
+
+        String message = dictionaryService.addContributionComment(commentRequest, responseCookie.toString());
+        return ResponseEntity.ok(message);
+    }
+
+    @Override
+    public ResponseEntity<Object> getContributionComments(BigDecimal wordId, Integer pageNum) {
+        return ResponseEntity.ok(dictionaryService.getContributionComments(wordId.longValue(), pageNum));
+    }
+
+    @Override
+    public ResponseEntity<Void> reportComment(String xXsrfToken, ReportContributionCommentRequest reportRequest) {
+        HttpServletRequest request = getRequest().orElseThrow(() -> new RuntimeException("request is null"));
+
+        Cookie tokenCookie = DictionaryServiceUtility.getAccessTokenCookie(request);
+
+        if (tokenCookie == null) {
+            log.error("No token cookie passed adding new word");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        ResponseCookie responseCookie = ResponseCookie.from(tokenCookie.getName(), tokenCookie.getValue())
+                .httpOnly(tokenCookie.isHttpOnly())
+                .sameSite("Lax")
+                .secure(tokenCookie.getSecure())
+                .domain(tokenCookie.getDomain())
+                .path(tokenCookie.getPath())
+                .maxAge(tokenCookie.getMaxAge())
+                .build();
+
+        dictionaryService.reportContributionComment(reportRequest, responseCookie.toString());
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<String> editContributionComment(String xXsrfToken, ContributionCommentRequest commentRequest) {
+        boolean isEditedSuccess = dictionaryService.editContributionComment(commentRequest);
+
+        if (isEditedSuccess)
+            return ResponseEntity.ok("Successfully edited comment");
+        else
+            return ResponseEntity.internalServerError().body("Comment doesn't exist!");
+    }
+
+    @Override
+    public ResponseEntity<String> patchComment(String xXsrfToken, BigDecimal commentId) {
+        boolean isSuccessfulDelete = dictionaryService.softDeleteContributionComment(commentId.longValue());
+        if (isSuccessfulDelete)
+            return ResponseEntity.ok("Successfully deleted comment");
+        else
+            return ResponseEntity.internalServerError().body("Comment doesn't exist!");
     }
 
     @Override

@@ -1,6 +1,9 @@
 package com.tkd.dictionaryservice.service;
 
 
+import com.tkd.dictionaryservice.dto.ContributionCommentDto;
+import com.tkd.models.ContributionCommentRequest;
+import com.tkd.models.ReportContributionCommentRequest;
 import com.tkd.models.ReportRequest;
 import com.tkd.models.WordModel;
 import feign.FeignException;
@@ -27,4 +30,14 @@ public interface DictionaryService {
     Boolean deleteWord(BigDecimal wordId);
 
     void reportContribution(ReportRequest reportRequest, String tokenCookieString);
+
+    String addContributionComment(ContributionCommentRequest commentRequest, String tokenCookieString);
+
+    Page<ContributionCommentDto> getContributionComments(Long wordId, int pageNum);
+
+    void reportContributionComment(ReportContributionCommentRequest reportRequest, String tokenCookieString);
+
+    Boolean editContributionComment(ContributionCommentRequest commentRequest);
+
+    Boolean softDeleteContributionComment(Long commentId);
 }

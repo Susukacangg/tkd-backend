@@ -26,7 +26,25 @@ public class SecurityConfig {
     private final String[] URL_BLACKLIST = {
             "/dict/add",
             "/dict/get-users-words",
-            "/report-contribution"
+            "/report-contribution",
+            "/dict/comment/report"
+    };
+
+    private final String[] POST_URL_BLACKLIST = {
+            "/dict/comment"
+    };
+
+    private final String[] PUT_URL_BLACKLIST = {
+            "/dict/{wordId}"
+    };
+
+    private final String[] DELETE_URL_BLACKLIST = {
+            "/dict/{wordId}",
+            "/dict/comment"
+    };
+
+    private final String[] PATCH_URL_BLACKLIST = {
+            "/dict/comment"
     };
 
     private final String[] URL_BLACKLIST_ALL = {
@@ -40,8 +58,10 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(matcherRegistry -> matcherRegistry
                         .requestMatchers(URL_BLACKLIST).authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/dict/{wordId}").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/dict/{wordId}").authenticated()
+                        .requestMatchers(HttpMethod.POST, POST_URL_BLACKLIST).authenticated()
+                        .requestMatchers(HttpMethod.PUT, PUT_URL_BLACKLIST).authenticated()
+                        .requestMatchers(HttpMethod.DELETE, DELETE_URL_BLACKLIST).authenticated()
+                        .requestMatchers(HttpMethod.PATCH, PATCH_URL_BLACKLIST).authenticated()
                         .requestMatchers(URL_BLACKLIST_ALL).denyAll()
                         .anyRequest().permitAll())
                 .sessionManagement(session -> session
