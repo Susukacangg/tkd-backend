@@ -253,4 +253,18 @@ public class IamServiceImpl implements IamService {
                 .maxAge(60 * 15)
                 .build();
     }
+
+    @Override
+    public UserView getUser(Long userId) {
+        UserView userView = null;
+
+        IamUserEntity userEntity = userDao.findByIdEquals(userId).orElse(null);
+
+        if (userEntity != null) {
+            userView = new UserView();
+            userView.setUsername(userEntity.getUsername());
+        }
+
+        return userView;
+    }
 }

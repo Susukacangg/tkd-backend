@@ -31,4 +31,6 @@ public interface IamService {
     Boolean adminCheck(String token);
 
     ResponseCookie generateCsrfCookie();
+
+    UserView getUser(Long userId);
 }
