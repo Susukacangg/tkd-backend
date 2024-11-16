@@ -1,20 +1,13 @@
 package com.tkd.dictionaryservice.service;
 
+import com.tkd.dictionaryservice.dto.ContributionCommentDto;
+import com.tkd.dictionaryservice.dto.ContributionCommentReportDao;
 import com.tkd.dictionaryservice.dto.UserViewDto;
-import com.tkd.dictionaryservice.entity.ContributionReportEntity;
-import com.tkd.dictionaryservice.entity.TranslationEntity;
-import com.tkd.dictionaryservice.entity.UsageExampleEntity;
-import com.tkd.dictionaryservice.entity.WordEntity;
+import com.tkd.dictionaryservice.entity.*;
 import com.tkd.dictionaryservice.feign.IamFeignService;
-import com.tkd.dictionaryservice.repository.ContributionReportDao;
-import com.tkd.dictionaryservice.repository.DictionaryExampleDao;
-import com.tkd.dictionaryservice.repository.DictionaryTranslationDao;
-import com.tkd.dictionaryservice.repository.DictionaryWordDao;
+import com.tkd.dictionaryservice.repository.*;
 import com.tkd.dictionaryservice.utility.DictionaryServiceUtility;
-import com.tkd.models.ReportRequest;
-import com.tkd.models.WordModel;
-import com.tkd.models.TranslationModel;
-import com.tkd.models.UsageExampleModel;
+import com.tkd.models.*;
 import feign.FeignException;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Service
@@ -40,6 +34,8 @@ public class DictionaryServiceImpl implements DictionaryService {
     private final DictionaryTranslationDao dictionaryTranslationDao;
     private final DictionaryExampleDao dictionaryExampleDao;
     private final ContributionReportDao contributionReportDao;
+    private final ContributionCommentDao contributionCommentDao;
+    private final ContributionCommentReportDao contributionCommentReportDao;
 
     private static final int PAGE_SIZE = 10;
 
@@ -288,5 +284,85 @@ public class DictionaryServiceImpl implements DictionaryService {
                 .build();
 
         contributionReportDao.save(reportEntity);
+    }
+
+    @Override
+    public String addContributionComment(ContributionCommentRequest commentRequest, String tokenCookieString) {
+        UserViewDto userViewDto = iamFeignService.getUserDetails(tokenCookieString);
+
+        ContributionCommentEntity commentEntity = ContributionCommentEntity.builder()
+                .wordId(commentRequest.getWordId().longValue())
+                .userId(userViewDto.getId().longValue())
+                .comment(commentRequest.getComment())
+                .commentDateTime(LocalDateTime.now())
+                .editedDateTime(null)
+                .isEdited(false)
+                .isDeleted(false)
+                .build();
+
+        contributionCommentDao.save(commentEntity);
+
+        return "Successfully added comment";
+    }
+
+    @Override
+    public Page<ContributionCommentDto> getContributionComments(Long wordId, int pageNum) {
+        Page<ContributionCommentEntity> comments =
+                contributionCommentDao
+                        .findAllByWordIdOrderByCommentDateTimeDescEditedDateTimeDesc(
+                                wordId, PageRequest.of(pageNum - 1, 5)
+                        );
+
+        AtomicReference<String> fetchedUsername = new AtomicReference<>();
+        return comments.map(comment -> {
+            fetchedUsername.set(iamFeignService.getUser(comment.getUserId()).getUsername());
+            return new ContributionCommentDto(comment, fetchedUsername.get());
+        });
+    }
+
+    @Override
+    public void reportContributionComment(ReportContributionCommentRequest reportRequest, String tokenCookieString) {
+        UserViewDto userViewDto = iamFeignService.getUserDetails(tokenCookieString);
+
+        ContributionCommentReportEntity reportEntity = ContributionCommentReportEntity.builder()
+                .commentId(reportRequest.getCommentId().longValue())
+                .userId(userViewDto.getId().longValue())
+                .reportType(reportRequest.getReportType())
+                .reportDateTime(LocalDateTime.now())
+                .status("PENDING")
+                .build();
+
+        contributionCommentReportDao.save(reportEntity);
+    }
+
+    @Override
+    public Boolean editContributionComment(ContributionCommentRequest commentRequest) {
+        ContributionCommentEntity commentEntity = contributionCommentDao
+                .findByCommentIdEquals(commentRequest.getCommentId().longValue()).orElse(null);
+
+        if (commentEntity == null)
+            return false;
+
+        commentEntity.setComment(commentRequest.getComment());
+        commentEntity.setEditedDateTime(LocalDateTime.now());
+        commentEntity.setIsEdited(true);
+
+        contributionCommentDao.save(commentEntity);
+
+        return true;
+    }
+
+    @Override
+    public Boolean softDeleteContributionComment(Long commentId) {
+        ContributionCommentEntity commentEntity = contributionCommentDao
+                .findByCommentIdEquals(commentId).orElse(null);
+
+        if (commentEntity == null)
+            return false;
+
+        commentEntity.setIsDeleted(true);
+        contributionCommentDao.save(commentEntity);
+
+        return true;
     }
 }

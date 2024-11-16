@@ -15,4 +15,7 @@ public interface IamFeignService {
 
     @GetMapping(path = "/user/details?includeId=true")
     UserViewDto getUserDetails(@RequestHeader("Cookie") String cookie);
+
+    @GetMapping(path = "/user/{userId}")
+    UserViewDto getUser(@PathVariable(value = "userId") Long userId);
 }

@@ -211,6 +211,132 @@ paths:
       responses:
         "200":
           description: status to indicate report was successful
+  /dict/comment:
+    post:
+      tags:
+        - DictV1
+      operationId: addContributionComment
+      summary: Add a comment from the user to the contribution
+      parameters:
+        - in: header
+          name: X-XSRF-TOKEN
+          schema:
+            type: string
+          required: true
+          description: csrf token
+      requestBody:
+        description: comment info
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContributionCommentRequest'
+      responses:
+        "200":
+          description: message to indicate success comment
+          content:
+            application/json:
+              schema:
+                type: string
+    get:
+      tags:
+        - DictV1
+      operationId: getContributionComments
+      summary: Get list of comments for the current word
+      parameters:
+        - in: query
+          name: wordId
+          schema:
+            type: number
+          required: true
+          description: word ID of the word
+        - in: query
+          name: pageNum
+          schema:
+            type: integer
+          required: true
+          description: page num for pageable
+      responses:
+        "200":
+          description: list of comments
+          content:
+            application/json:
+              schema:
+                type: object
+    put:
+      tags:
+        - DictV1
+      operationId: editContributionComment
+      summary: edit the comment of the contribution
+      parameters:
+        - in: header
+          name: X-XSRF-TOKEN
+          schema:
+            type: string
+          required: true
+          description: csrf token
+      requestBody:
+        description: comment info
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContributionCommentRequest'
+      responses:
+        "200":
+          description: message to indicate success comment
+          content:
+            application/json:
+              schema:
+                type: string
+    patch:
+      tags:
+        - DictV1
+      operationId: patchComment
+      summary: soft delete the comment
+      parameters:
+        - in: header
+          name: X-XSRF-TOKEN
+          schema:
+            type: string
+          required: true
+          description: csrf token
+        - in: query
+          name: commentId
+          schema:
+            type: number
+          required: true
+          description: comment ID to be deleted
+      responses:
+        "200":
+          description: message to indicate success delete
+          content:
+            application/json:
+              schema:
+                type: string
+  /dict/comment/report:
+    post:
+      tags:
+        - DictV1
+      operationId: report comment
+      summary: add record to indicate comment is reported
+      parameters:
+        - in: header
+          name: X-XSRF-TOKEN
+          schema:
+            type: string
+          required: true
+          description: csrf token
+      requestBody:
+        description: body containing report information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportContributionCommentRequest'
+      responses:
+        "200":
+          description: status to indicate report was successful
 
 components:
   schemas:
@@ -257,4 +383,24 @@ components:
         reportType:
           type: string
         reportDescription:
+          type: string
+    ContributionCommentRequest:
+      type: object
+      properties:
+        commentId:
+          type: number
+        comment:
+          type: string
+        wordId:
+          type: number
+        commentedBy:
+          type: string
+    ReportContributionCommentRequest:
+      type: object
+      properties:
+        commentId:
+          type: number
+        reportedBy:
+          type: string
+        reportType:
           type: string
