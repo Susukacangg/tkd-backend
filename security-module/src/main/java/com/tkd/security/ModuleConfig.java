@@ -28,7 +28,7 @@ public class ModuleConfig {
                         .allowedOrigins("https://localhost:5173")
                         .allowCredentials(true)
                         .allowedHeaders("*")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE");
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH");
             }
         };
     }
