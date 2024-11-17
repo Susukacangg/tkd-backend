@@ -9,6 +9,10 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 
 public class DictionaryServiceUtility {
@@ -65,5 +69,11 @@ public class DictionaryServiceUtility {
                     accessTokenCookie = cookie;
 
         return accessTokenCookie;
+    }
+
+    public static LocalDateTime getUtcLocalDateTime() {
+        LocalDateTime localDateTimeNow = LocalDateTime.now();
+        ZonedDateTime utcZonedDateTimeNow = localDateTimeNow.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC);
+        return utcZonedDateTimeNow.toLocalDateTime();
     }
 }
