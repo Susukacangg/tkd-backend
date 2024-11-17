@@ -19,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -279,7 +278,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                 .userId(userViewDto.getId().longValue())
                 .reportType(reportRequest.getReportType())
                 .reportDescription(reportRequest.getReportDescription())
-                .reportDate(LocalDateTime.now())
+                .reportDateTime(DictionaryServiceUtility.getUtcLocalDateTime())
                 .status("PENDING")
                 .build();
 
@@ -294,7 +293,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                 .wordId(commentRequest.getWordId().longValue())
                 .userId(userViewDto.getId().longValue())
                 .comment(commentRequest.getComment())
-                .commentDateTime(LocalDateTime.now())
+                .commentDateTime(DictionaryServiceUtility.getUtcLocalDateTime())
                 .editedDateTime(null)
                 .isEdited(false)
                 .isDeleted(false)
@@ -328,7 +327,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                 .commentId(reportRequest.getCommentId().longValue())
                 .userId(userViewDto.getId().longValue())
                 .reportType(reportRequest.getReportType())
-                .reportDateTime(LocalDateTime.now())
+                .reportDateTime(DictionaryServiceUtility.getUtcLocalDateTime())
                 .status("PENDING")
                 .build();
 
@@ -344,7 +343,7 @@ public class DictionaryServiceImpl implements DictionaryService {
             return false;
 
         commentEntity.setComment(commentRequest.getComment());
-        commentEntity.setEditedDateTime(LocalDateTime.now());
+        commentEntity.setEditedDateTime(DictionaryServiceUtility.getUtcLocalDateTime());
         commentEntity.setIsEdited(true);
 
         contributionCommentDao.save(commentEntity);
