@@ -32,7 +32,7 @@ public class ContributionReportEntity {
     private String reportDescription;
 
     @Column(nullable = false)
-    private LocalDateTime reportDate;
+    private LocalDateTime reportDateTime;
 
     @Column(nullable = false)
     private String status;
