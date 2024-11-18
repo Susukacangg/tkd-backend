@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Entity
@@ -29,10 +29,10 @@ public class ContributionCommentEntity {
     private String comment;
 
     @Column(nullable = false)
-    private LocalDateTime commentDateTime;
+    private Instant commentDateTime;
 
     @Column
-    private LocalDateTime editedDateTime;
+    private Instant editedDateTime;
 
     @Column(nullable = false)
     private Boolean isEdited;

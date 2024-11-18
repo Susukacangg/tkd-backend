@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Entity
@@ -32,7 +32,7 @@ public class ContributionReportEntity {
     private String reportDescription;
 
     @Column(nullable = false)
-    private LocalDateTime reportDateTime;
+    private Instant reportDateTime;
 
     @Column(nullable = false)
     private String status;
