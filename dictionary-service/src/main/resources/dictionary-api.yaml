@@ -384,6 +384,8 @@ components:
           type: string
         reportDescription:
           type: string
+        reportDateTime:
+          type: string
     ContributionCommentRequest:
       type: object
       properties:
@@ -395,6 +397,8 @@ components:
           type: number
         commentedBy:
           type: string
+        commentDateTime:
+          type: string
     ReportContributionCommentRequest:
       type: object
       properties:
@@ -403,4 +407,6 @@ components:
         reportedBy:
           type: string
         reportType:
+          type: string
+        reportDateTime:
           type: string
